@@ -114,6 +114,9 @@
     margin: 10px;
     text-align: center;
     font-size: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
 }
 
 .col-subtotal {
@@ -163,6 +166,7 @@
 
 .subtotal-eliminar {
     display: flex;
+    justify-content: flex-end;
 }
 
 .boton-cerrar {
@@ -196,6 +200,12 @@
     height: 33px;
     border-radius: 8px;
     cursor: pointer;
+}
+
+.info-extra{
+    width: 140px;
+    display: flex;
+    flex-direction: column;
 }
 
 .btn-observacion{

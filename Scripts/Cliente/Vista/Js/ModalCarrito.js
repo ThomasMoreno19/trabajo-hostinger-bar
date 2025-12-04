@@ -109,7 +109,16 @@ class ModalCarrito {
                     <div class="info-extra">
                         <div class="subtotal-eliminar">
                             <div class="celda col-subtotal">$${articulo.subtotal}</div>
-                            <button class="btn-eliminar" data-id="${articulo.id}" aria-label="Eliminar">🗑️</button>
+                            <button class="btn-eliminar" data-id="${articulo.id}" aria-label="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="19px" height="19px" viewBox="0 0 485 485" xml:space="preserve">
+                                <g>
+                                    <g>
+                                        <rect x="67.224" width="350.535" height="71.81"/>
+                                        <path d="M417.776,92.829H67.237V485h350.537V92.829H417.776z M165.402,431.447h-28.362V146.383h28.362V431.447z M256.689,431.447    h-28.363V146.383h28.363V431.447z M347.97,431.447h-28.361V146.383h28.361V431.447z"/>
+                                    </g>
+                                </g>
+                                </svg>
+                            </button>
                         </div>
                         <div class="col-cantidad">
                             <button class="btn-cant menos" data-id="${articulo.id}">-</button>

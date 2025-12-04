@@ -7,7 +7,7 @@ if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['SERVER_NAME'] === 'localh
     require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/localBD.php';
 } else {
     // ☁️ Entorno Hostinger
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/conexionBD.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
 }
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorAdministrador.php';
