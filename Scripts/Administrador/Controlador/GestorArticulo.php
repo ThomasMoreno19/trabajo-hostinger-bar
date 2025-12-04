@@ -136,6 +136,7 @@ class GestorArticulo {
         
         $id = $datos['id'];
         $id_rubro = $datos['nombre_rubro'];
+        $id_empresa = $datos['id_empresa'];
         $nombre = $datos['nombre'];
         $descripcion = $datos['descripcion'];
         $precio = $datos['precio'];
@@ -148,10 +149,11 @@ class GestorArticulo {
         }
 
         try {
-            $articulo = $this->articuloRepositorio->crear($id, $id_rubro, $nombre, $precio, $codigo_carta, $descripcion);
+            $articulo = $this->articuloRepositorio->crear($id, $id_rubro, $id_empresa, $nombre, $precio, $codigo_carta, $descripcion);
             echo json_encode([
             'id' => $articulo['id'],
             'id_rubro' => $articulo['id_rubro'],
+            'id_empresa' => $articulo['id_empresa'],
             'nombre' => $articulo['nombre'],
             'descripcion' => $articulo['descripcion'],
             'precio' => $articulo['precio'],
@@ -185,6 +187,7 @@ class GestorArticulo {
             $articulosParaRepo[] = [
                 'id' => $articulo['id_articulo'],
                 'id_rubro' => $articulo['nombre_rubro'],
+                'id_empresa' => $id_empresa,
                 'nombre' => $articulo['nombre_articulo'],
                 'descripcion' => $articulo['descripcion'] ?? '',
                 'precio' => $articulo['precio_articulo'],

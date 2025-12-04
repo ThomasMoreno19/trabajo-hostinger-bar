@@ -4,6 +4,7 @@
 class Articulo {
     private int $id;
     private int $id_rubro;
+    private int $id_empresa;
     private string $nombre;
     private string $descripcion;
     private int $precio;
@@ -16,9 +17,10 @@ class Articulo {
 
 
     //Constructor
-    public function __construct(int $id,int $id_rubro, string $nombre, string $descripcion, int $precio, string $codigo_carta, bool $aparece_en_csv, bool $creado_en_pagina, string $logo_url = 'Archivos/Logos/Vacio.png', ?string $fecha_eliminado = '') {
+    public function __construct(int $id,int $id_rubro, int $id_empresa,string $nombre, string $descripcion, int $precio, string $codigo_carta, bool $aparece_en_csv, bool $creado_en_pagina, string $logo_url = 'Archivos/Logos/Vacio.png', ?string $fecha_eliminado = '') {
         $this->id = $id;
         $this->id_rubro = $id_rubro;
+        $this->id_empresa = $id_empresa;
         $this->nombre = $nombre;
         $this->descripcion = $descripcion;
         $this->precio = $precio;
@@ -40,6 +42,10 @@ class Articulo {
         return $this->id_rubro;
     }
     
+    public function getIdEmpresa(): int {
+        return $this->id_empresa;
+    }
+
     public function getNombre(): string {
         return $this->nombre;
     }
@@ -81,6 +87,10 @@ class Articulo {
     
     public function setIdRubro(int $id_rubro): void {
         $this->id_rubro = $id_rubro;
+    }
+    
+    public function setIdEmpresa(int $id_empresa): void {
+        $this->id_empresa = $id_empresa;
     }
     
     public function setNombre(string $nombre): void {

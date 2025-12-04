@@ -120,7 +120,7 @@ class ArticuloVista {
                 </div>
                 <div class="form-group">
                     <label>Precio:</label>
-                    <input type="precio" name="precio" value="${precioSinPuntos}" required>
+                    <input type="text" name="precio" value="${precioSinPuntos}" required>
                 </div>
                 <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>

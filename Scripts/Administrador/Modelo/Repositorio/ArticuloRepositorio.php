@@ -22,6 +22,7 @@ class ArticuloRepositorio {
             return new Articulo(
                 $data['id'],
                 $data['id_rubro'],
+                $data['id_empresa'],
                 $data['nombre'],
                 $data['descripcion'],
                 $data['precio'],
@@ -40,6 +41,7 @@ class ArticuloRepositorio {
                 SELECT 
                     id, 
                     id_rubro, 
+                    id_empresa,
                     nombre, 
                     descripcion, 
                     precio, 
@@ -62,13 +64,14 @@ class ArticuloRepositorio {
         }
     }
 
-    public function crearPorCsv(int $id, int $id_rubro, string $nombre,float $precio, string $codigo_carta = '', string $descripcion = '', ?string $logo_url = 'Archivos/Logos/Vacio.png'): array {
+    public function crearPorCsv(int $id, int $id_rubro, int $id_empresa,string $nombre,float $precio, string $codigo_carta = '', string $descripcion = '', ?string $logo_url = 'Archivos/Logos/Vacio.png'): array {
         try {
             $stmt = $this->pdo->prepare(
-                "INSERT INTO Articulo (id, id_rubro, nombre, descripcion, precio, codigo_carta, aparece_en_csv, creado_en_pagina, logo_url)
+                "INSERT INTO Articulo (id, id_rubro, id_empresa,nombre, descripcion, precio, codigo_carta, aparece_en_csv, creado_en_pagina, logo_url)
                 VALUES (:id, :id_rubro, :nombre, :descripcion, :precio, :codigo_carta, 1, 0, :logo_url)
                 ON DUPLICATE KEY UPDATE
                     id_rubro = VALUES(id_rubro),
+                    id_empresa = VALUES(id_empresa),
                     nombre = VALUES(nombre),
                     descripcion = VALUES(descripcion),
                     precio = VALUES(precio),
@@ -77,6 +80,7 @@ class ArticuloRepositorio {
                 
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
             $stmt->bindValue(':id_rubro', (int)$id_rubro, PDO::PARAM_INT);
+            $stmt->bindValue(':id_empresa', (int)$id_empresa, PDO::PARAM_INT);
             $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
             $stmt->bindValue(':descripcion', $descripcion ?? '', PDO::PARAM_STR);
             // precio como string o float; PDO no tiene PARAM_FLOAT -> pasar como string o usar PDO::PARAM_STR
@@ -88,6 +92,7 @@ class ArticuloRepositorio {
                 return  [
                     'id' => $id,
                     'id_rubro' => $id_rubro,
+                    'id_empresa' => $id_empresa,
                     'descripcion' => $descripcion,
                     'nombre' => $nombre,
                     'precio' => $precio,
@@ -106,9 +111,10 @@ class ArticuloRepositorio {
         $values = [];
         $params = [];
         foreach ($articulos as $i => $a) {
-            $values[] = "(:id$i, :id_rubro$i, :nombre$i, :descripcion$i, :precio$i, :codigo_carta$i, 1, 0, :logo_url$i)";
+            $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :descripcion$i, :precio$i, :codigo_carta$i, 1, 0, :logo_url$i)";
             $params[":id$i"] = $a['id'];
             $params[":id_rubro$i"] = $a['id_rubro'];
+            $params[":id_empresa$i"] = $a['id_empresa'];
             $params[":nombre$i"] = $a['nombre'];
             $params[":descripcion$i"] = $a['descripcion'] ?? '';
             $params[":precio$i"] = (string)$a['precio'];
@@ -116,10 +122,11 @@ class ArticuloRepositorio {
             $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
         }
     
-        $sql = "INSERT INTO Articulo (id, id_rubro, nombre, descripcion, precio, codigo_carta, aparece_en_csv, creado_en_pagina, logo_url)
+        $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, descripcion, precio, codigo_carta, aparece_en_csv, creado_en_pagina, logo_url)
                 VALUES " . implode(', ', $values) . "
                 ON DUPLICATE KEY UPDATE
                     id_rubro = VALUES(id_rubro),
+                    id_empresa = VALUES(id_empresa),
                     nombre = VALUES(nombre),
                     descripcion = VALUES(descripcion),
                     precio = VALUES(precio),

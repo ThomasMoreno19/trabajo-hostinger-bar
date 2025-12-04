@@ -283,7 +283,7 @@ class PantallaModerador {
 
             try {
                 // Envía la lista procesada al controlador
-                const resultado = await this.gestor.cargarArticulosYRubros(archivo,this.empresa.id);
+                await this.gestor.cargarArticulosYRubros(archivo,this.empresa.id);
                 document.body.removeChild(modal);
                 // Actualiza la lista de artículos
                 this.loader.classList.remove('hidden');
