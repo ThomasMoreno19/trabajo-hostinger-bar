@@ -123,6 +123,8 @@ p.descripcion{
     
     p.descripcion{
         font-size: clamp(0.1em, 3.6vw, 1.8em);
+        max-width: 95%;
+        margin: 0 auto;
     }
 }
 

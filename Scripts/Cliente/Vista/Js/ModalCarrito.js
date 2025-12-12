@@ -18,7 +18,7 @@ class ModalCarrito {
         // Elimino modal previo si existe (evita duplicados)
         this.wrapper = document.getElementById("modal-carrito-wrapper");
         if (this.wrapper) this.wrapper.remove();
-
+        
         this.wrapper = document.createElement("div");
         this.wrapper.id = "modal-carrito-wrapper";
         this.wrapper.innerHTML = `
@@ -106,7 +106,14 @@ class ModalCarrito {
                         <div class="col-nombre">${articulo.nombre}</div>
                         <div class="col-precio">$${articulo.precio} c/u</div>
                     </div>
-                    <div class="info-extra">
+
+                    <div class="observacion-wrapper">
+                        <textarea class="observacion-textarea" data-id="${articulo.id}" placeholder="Observación" maxlength="90">${articulo.observacion}</textarea>
+                    </div>
+                    
+                </div>
+
+                <div class="info-extra">
                         <div class="subtotal-eliminar">
                             <div class="celda col-subtotal">$${articulo.subtotal}</div>
                             <button class="btn-eliminar" data-id="${articulo.id}" aria-label="Eliminar">
@@ -126,11 +133,6 @@ class ModalCarrito {
                             <button class="btn-cant mas" data-id="${articulo.id}">+</button>
                         </div>
                     </div>
-                </div>
-
-                <div class="observacion-wrapper">
-                    <textarea class="observacion-textarea" data-id="${articulo.id}" placeholder="Observación" maxlength="90">${articulo.observacion}</textarea>
-                </div>
             `;
 
             cuerpo.appendChild(bloque);
@@ -262,10 +264,10 @@ class ModalCarrito {
             <div class="modal-datos">
                 <h2>Ingrese sus datos</h2>
 
-                <label class="labels">Nombre:</label>
+                <label class="labels">Nombre*:</label>
                 <input type="text" id="input-nombre-cliente" placeholder="Tu nombre" required>
 
-                <label class="labels">Teléfono:</label>
+                <label class="labels">Teléfono*:</label>
                 <input 
                     type="tel" 
                     id="input-telefono-cliente"

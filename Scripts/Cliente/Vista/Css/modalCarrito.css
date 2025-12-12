@@ -91,7 +91,8 @@
 .fila-articulo {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    width: 100%;
 }
 
 /* cada celda */
@@ -132,6 +133,13 @@
     border-radius: 8px;
     width: 80%;
     margin: 15px auto;
+    display: flex;
+}
+
+.nombre-precioUnitario {
+    display: flex;
+    max-width: fit-content;
+    gap: 5px;
 }
 
 .observacion-wrapper {
