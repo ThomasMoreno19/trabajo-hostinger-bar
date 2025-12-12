@@ -219,7 +219,7 @@ class ModalCarrito {
         }
 
         // Construyo el mensaje
-        let mensaje = `Nombre: ${nombreCliente}\nNúmero de Celular: ${telefonoCliente}\n`;
+        let mensaje = `Nombre: ${nombreCliente}\nCelular: ${telefonoCliente}\n`;
 
         articulos.forEach(a => {
             const id      = String(a.id).padEnd(6).slice(0, 6);
