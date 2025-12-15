@@ -91,7 +91,9 @@ class ModalCarrito {
 
             if (typeof articulo.cantidad === "undefined") articulo.cantidad = 1;
             if (typeof articulo.subtotal === "undefined") articulo.subtotal = this.carrito.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad;
-            if (typeof articulo.observacion === "undefined") articulo.observacion = "";
+            if (!articulo.observaciones) {
+                articulo.observaciones = ["", "", ""];
+            }
 
             articulo.subtotal = this.carrito.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad;
             articulo.precio = this.carrito.insertarPuntoPrecio(articulo.precio);
@@ -108,7 +110,26 @@ class ModalCarrito {
                     </div>
 
                     <div class="observacion-wrapper">
-                        <textarea class="observacion-textarea" data-id="${articulo.id}" placeholder="Observación" maxlength="90">${articulo.observacion}</textarea>
+                        <textarea class="observacion-textarea"
+                            data-id="${articulo.id}"
+                            data-index="0"
+                            maxlength="50"
+                            placeholder="Observación">
+                        </textarea>
+
+                        <textarea class="observacion-textarea hidden"
+                            data-id="${articulo.id}"
+                            data-index="1"
+                            maxlength="50"
+                            placeholder="Observación adicional">
+                        </textarea>
+
+                        <textarea class="observacion-textarea hidden"
+                            data-id="${articulo.id}"
+                            data-index="2"
+                            maxlength="50"
+                            placeholder="Observación adicional">
+                        </textarea>
                     </div>
                     
                 </div>
@@ -136,17 +157,54 @@ class ModalCarrito {
             `;
 
             cuerpo.appendChild(bloque);
+            const textareas = bloque.querySelectorAll(".observacion-textarea");
+
+            textareas.forEach((ta, i) => {
+                ta.value = articulo.observaciones[i] || "";
+
+                if (i > 0 && articulo.observaciones[i - 1].length <= 35) {
+                    ta.classList.add("hidden");
+                } else {
+                    ta.classList.remove("hidden");
+                }
+            });
+
         });
 
         totalSpan.textContent = this.carrito.obtenerTotal();
 
         // Listener para textarea
         cuerpo.querySelectorAll(".observacion-textarea").forEach(textarea => {
-            textarea.addEventListener("input", (e) => {
+            textarea.addEventListener("input", () => {
                 const id = textarea.dataset.id;
-                const articulo = this.carrito.mostrarArticulos().find(a => String(a.id) === String(id));
-                if (articulo) {
-                    articulo.observacion = textarea.value; // queda guardado en el carrito
+                const index = Number(textarea.dataset.index);
+
+                const articulo = this.carrito.mostrarArticulos()
+                    .find(a => String(a.id) === String(id));
+
+                if (!articulo) return;
+
+                articulo.observaciones[index] = textarea.value;
+
+                const wrapper = textarea.closest(".observacion-wrapper");
+                const textareas = wrapper.querySelectorAll(".observacion-textarea");
+
+                // Obs 2
+                if (textareas[0].value.length > 35) {
+                    textareas[1].classList.remove("hidden");
+                } else {
+                    textareas[1].classList.add("hidden");
+                    textareas[1].value = "";
+                    articulo.observaciones[1] = "";
+                }
+
+                // Obs 3
+                if (textareas[1].value.length > 35) {
+                    textareas[2].classList.remove("hidden");
+                } else {
+                    textareas[2].classList.add("hidden");
+                    textareas[2].value = "";
+                    articulo.observaciones[2] = "";
                 }
             });
         });
@@ -225,7 +283,7 @@ class ModalCarrito {
             const id      = String(a.id).padEnd(6).slice(0, 6);
             const nombre  = String(a.nombre).padEnd(30).slice(0, 30);
             const cant    = String(a.cantidad).padEnd(10).slice(0, 10);
-            const obs     = a.observacion ? String(a.observacion) : "";
+            const obs = this.formatearObservacion(a.observaciones || ["", "", ""]);
 
             mensaje += `${id}${nombre}${cant}${obs}\n`;
         });
@@ -311,5 +369,9 @@ class ModalCarrito {
         };
     }
 
-
+    formatearObservacion(observaciones) {
+        return observaciones
+            .map(obs => (obs || "").padEnd(50, " ").slice(0, 50))
+            .join("");
+    }
 }
