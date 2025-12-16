@@ -178,6 +178,12 @@ class ModalCarrito {
             textarea.addEventListener("input", () => {
                 const id = textarea.dataset.id;
                 const index = Number(textarea.dataset.index);
+                textarea.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();     // evita el salto de línea
+                        textarea.value = textarea.value.replace(/\n/g, ""); // por si acaso
+                    }
+                });
 
                 const articulo = this.carrito.mostrarArticulos()
                     .find(a => String(a.id) === String(id));
