@@ -269,6 +269,7 @@ class PantallaCliente {
                     this.carrito.eliminarArticulo(id);
                     this.listaArticulosSeleccionados =
                         this.listaArticulosSeleccionados.filter(x => x !== id);
+                    this.sacarArticulo(id);
                 }
                 this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
                 this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
@@ -283,6 +284,12 @@ class PantallaCliente {
     seleccionarArticulo(id){
         this.todosLosArticulos.forEach(articulo => {
             if (articulo.dataset.articuloId == id) articulo.classList.add('seleccionado');
+        })
+    }
+
+    sacarArticulo(id){
+        this.todosLosArticulos.forEach(articulo => {
+            if (articulo.dataset.articuloId == id) articulo.classList.remove('seleccionado');
         })
     }
 
@@ -352,6 +359,7 @@ class PantallaCliente {
                     clon.classList.remove('seleccionado');
                     this.listaArticulosSeleccionados =
                         this.listaArticulosSeleccionados.filter(x => x !== id);
+                    this.sacarArticulo(id);
                 }
                 this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
                 this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
