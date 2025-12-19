@@ -1,8 +1,9 @@
 class ModalCarrito {
-    constructor(carrito, empresa, onEliminarArticulo) {
+    constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra) {
         this.carrito = carrito;
         this.empresa = empresa;
         this.onEliminarArticulo = onEliminarArticulo;
+        this.onFinalizarCompra = onFinalizarCompra;
         this.listaCentral = document.getElementById('lista-central');
         this.wrapper = null;
     }
@@ -313,6 +314,7 @@ class ModalCarrito {
         articulos.forEach(articulo => {
             this.onEliminarArticulo(articulo.id);
         });
+        this.onFinalizarCompra();
                     
     }
 

@@ -605,11 +605,28 @@ class PantallaCliente {
             this.empresa,
             (idEliminado) => {
                 this.removerSeleccionVisual(idEliminado)
+            },
+            () => {
+                this.carrito.vaciarCarrito();
+                this.listaArticulosSeleccionados = [];
+                this.borrarSeleccion();
+                this.cantidadArticulosCarrito.textContent = 0;
+                this.botonCarrito.classList.add('hidden');
             }
         );
         this.listaCentral.classList.add('hidden');
         modalCarrito.abrirModalCarrito();
     }
+
+    borrarSeleccion() {
+        this.todosLosArticulos.forEach(articulo => {
+            articulo.classList.remove('seleccionado');
+            articulo.classList.remove('pulse');
+        });
+        this.volverAtras();
+        this.barraBusqueda.value = '';
+    }
+
 
     removerSeleccionVisual(idArticulo) {
         // sacar de listaArticulosSeleccionados
