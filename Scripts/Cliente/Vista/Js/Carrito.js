@@ -11,7 +11,11 @@ class Carrito {
             precio: articulo.precio,
             cantidad: 1
         };
-
+        if (articulo.nombre === undefined) {
+            copia.nombre = articulo.dataset.nombre;
+            copia.id = articulo.dataset.articuloId;
+            copia.precio = articulo.dataset.precio;
+        }
         this.articulos.push(copia);
     }
     

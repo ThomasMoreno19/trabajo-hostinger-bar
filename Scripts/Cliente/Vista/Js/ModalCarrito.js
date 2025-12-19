@@ -114,21 +114,21 @@ class ModalCarrito {
                             data-id="${articulo.id}"
                             data-index="0"
                             maxlength="50"
-                            placeholder="Observación">
+                            placeholder="Observación del platillo">
                         </textarea>
 
                         <textarea class="observacion-textarea hidden"
                             data-id="${articulo.id}"
                             data-index="1"
                             maxlength="50"
-                            placeholder="Observación adicional">
+                            placeholder="Observación del platillo">
                         </textarea>
 
                         <textarea class="observacion-textarea hidden"
                             data-id="${articulo.id}"
                             data-index="2"
                             maxlength="50"
-                            placeholder="Observación adicional">
+                            placeholder="Observación del platillo">
                         </textarea>
                     </div>
                     
