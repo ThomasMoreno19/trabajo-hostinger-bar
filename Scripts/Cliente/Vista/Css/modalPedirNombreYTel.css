@@ -1,4 +1,4 @@
-#modal-datos-cliente {
+#modal-datos-wrapper {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.6);
@@ -31,7 +31,7 @@
 }
 
 .modal-datos .confirmar {
-    background: #c68711;
+    background: #e89e13;
     color: white;
     padding: 8px 12px;
     border: none;

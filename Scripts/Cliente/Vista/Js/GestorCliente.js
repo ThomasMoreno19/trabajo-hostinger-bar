@@ -3,7 +3,7 @@
 class GestorCliente {
     
     // cacheFetch.js
-    async cacheFetch(url, body, cacheKeyPrefix, ttl = 600000, id_empresa) { // 10 min
+    async cacheFetch(url, body, cacheKeyPrefix, ttl = 600, id_empresa) { // 10 min
         // Agregar id_empresa al body
         const requestBody = { ...body, id_empresa };
     
@@ -41,7 +41,7 @@ class GestorCliente {
             `/articulo/mostrar`,
             { id_rubro },
             'articulos',
-            600000, //10 min
+            600, //10 min
             id_empresa
         );
     }
@@ -51,7 +51,7 @@ class GestorCliente {
             `/rubro/mostrar`,
             { id_empresa },
             'rubros',
-            600000,
+            600,
             id_empresa
         );
     }
@@ -68,7 +68,7 @@ class GestorCliente {
             `/empresa/mostrar/id`,
             bodyData,
             'empresa',        // Prefijo único para esta entidad
-            600000,            // 10 minutos
+            600,            // 10 minutos
             id_empresa
         );
     }

@@ -8,7 +8,7 @@
 }
 
 .boton-alta {
-    background-color: #242130; /* Color moreado */
+    background-color: #181818; /* Color moreado */
     color: white; /* Texto blanco */
     padding: 12px 20px;
     border: none;
@@ -23,7 +23,7 @@
 }
 
 .boton-alta:hover {
-    background-color: #292635; /* Tono de morado más claro al pasar el ratón */
+    background-color: #363636; /* Tono de morado más claro al pasar el ratón */
 }
 
 .boton-alta:active {

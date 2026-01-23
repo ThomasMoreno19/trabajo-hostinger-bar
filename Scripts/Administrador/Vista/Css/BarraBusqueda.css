@@ -2,11 +2,11 @@
 #barra-busqueda {
     font-size: 1.1em;
     border: none; /* Borde gris claro */
-    padding: 0.9%;
-    border-radius: 7px;
+    padding: 7px 5px;
+    border-radius: 8px;
     background-color: rgba(255, 255, 255, 0.01); /* Fondo blanco */
     box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3); /* Sombra suave para un efecto de profundidad */
-    margin: 5% 13% 5%; 
+    margin: 7% 13% 5%; 
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     color:#ffffffa6;
     width:75%;
@@ -29,4 +29,10 @@
 /* Clase que controla la visibilidad y la animación */
 .hidden {
     display: none;
+}
+
+@media screen and (max-width: 600px) {
+  #barra-busqueda {
+    margin: 7% 13% 5%;
+  }
 }

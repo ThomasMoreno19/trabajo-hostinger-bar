@@ -40,7 +40,7 @@ h2 {
 }
 
 .form-group {
-    text-align: left; /* Align labels and inputs to the left */
+  text-align: left; /* Align labels and inputs to the left */
 }
 
 .form-group label {

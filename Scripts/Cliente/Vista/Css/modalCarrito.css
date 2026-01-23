@@ -31,15 +31,16 @@
 }
 
 #header-modal-carrito {
+  display: flex;
     position: relative; /* permite centrar y ubicar el cerrar */
-    padding: 20px;
+    padding: 5px 20px;
     background: #222;
     border-bottom: 2px solid #333;
     text-align: center; /* centra el texto */
 }
 
 #header-modal-carrito h2 {
-    margin: 0;
+    margin: auto auto;
     font-size: 22px;
     width: 100%;
     text-align: center; /* por si acaso */
@@ -47,9 +48,6 @@
 
 /* El botón de cerrar queda fijo arriba a la derecha */
 #header-modal-carrito .boton-cerrar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
     font-size: 38px;
 }
 
@@ -70,7 +68,7 @@
     background: #333;
     border: 1px solid #555;
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 10px;
 }
 
@@ -152,7 +150,7 @@
     min-height: 30px;
     padding: 7px;
     border: 1px solid #aaa;
-    border-radius: 5px;
+    border-radius: 8px;
     resize: none;
     background-color: transparent;
     color: white;
@@ -178,9 +176,6 @@
 }
 
 .boton-cerrar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -189,13 +184,13 @@
 }
 
 .btn-cant{
-    background-color: #c68711;
+    background-color: #e89e13;
     border: none;
     color: white;
     width: 21px;
     height: 21px;
     align-items: center;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
@@ -217,20 +212,20 @@
 }
 
 .btn-observacion{
-    background-color: #c68711;
+    background-color: #e89e13;
     border: none;
     color: white;
     padding: 5px 10px;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
-#boton-finalizar-compra{
-    background-color: #c68711;
+.boton{
+    background-color: #e89e13;
     border: none;
     color: white;
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     margin-top: 15px;
     width: fit-content;

@@ -1,0 +1,92 @@
+#pedir-datos-wrapper {
+  padding: 15px 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: white;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: white;
+  user-select: none;          /* estándar */
+  -webkit-user-select: none;  /* Chrome / Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* Edge */
+}
+
+.required::after {
+  content: " *";
+  color: #e69f1a; /* amarillo */
+  font-weight: bold;
+}
+
+.lista-botones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.toggle-btn {
+  padding: 11px 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: white;
+  border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 13px;
+}
+
+.toggle-btn.active {
+  background-color: #e69f1a;
+  color: black;
+}
+
+#titulo-modulos {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: white;
+}
+
+.form-group input[type="text"],
+.form-group input[type="file"],
+.form-group input[type="numeric"],
+.form-group input[type="password"],
+.form-group input[type="tel"]{
+  width: 40%;
+  margin: auto;
+  padding: 10px;
+  font-size: 14px;
+  border: transparent;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.03);
+  color: white;
+}
+
+#direccion-cliente {
+  margin-bottom: 20px;
+}
+
+@media screen and (max-width: 600px) {
+  .form-group input[type="text"],
+  .form-group input[type="file"],
+  .form-group input[type="numeric"],
+  .form-group input[type="password"],
+  .form-group input[type="tel"]
+  {
+    width: 75%;
+  }
+}

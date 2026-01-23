@@ -1,52 +1,60 @@
 /* Scripts/Vista/Cliente/Css/BotonVolver.css */
 
-#boton-volver {
-    background-color: #ffffff00; /* Transparent background */
-    color: #E89E13;
-    width: 6.0em;
-    height: 2.5em;
-    border: none;
-    border-radius: 8px;
-    transition: all 0.7s ease;
-    display: flex;
-    align-items: center; /* Centra verticalmente SVG y texto */
+.boton-volver {
+  background-color: #ffffff00; /* Transparent background */
+  color: #e89e13;
+  width: 6.0em;
+  height: 2.5em;
+  border: none;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center; /* Centra verticalmente SVG y texto */
+  cursor: pointer;
 }
 
-#boton-volver:hover {
-    background-color: #E89E13;
-    color: black;
+.boton-volver svg {
+  width: 1.6em;
+  /* margin: -0.2em 0.8em 1em; -- Ya no es necesario con el nuevo posicionamiento */
+  position: relative; /* <--- CAMBIO CLAVE: Cambia de 'absolute' a 'relative' */
+  /* Esto permite que el SVG se posicione dentro del flujo del flexbox */
+  display: flex; /* Asegura que el SVG en sí se comporte como un flex item */
+  transition: all 0.4s ease;
+  
+  transform: rotate(180deg); /* La rotación se mantiene para que apunte a la izquierda */
+  
+  /* Ajusta este margen para mover la flecha más a la izquierda del texto */
+  margin-right: 0.5em; /* <--- AJUSTE CLAVE: Espacio entre la flecha y el texto "Volver" */
+  margin-left: 0em; /* Asegura que no haya margen izquierdo indeseado */
 }
 
-#boton-volver svg {
-    width: 1.6em;
-    /* margin: -0.2em 0.8em 1em; -- Ya no es necesario con el nuevo posicionamiento */
-    position: relative; /* <--- CAMBIO CLAVE: Cambia de 'absolute' a 'relative' */
-    /* Esto permite que el SVG se posicione dentro del flujo del flexbox */
-    display: flex; /* Asegura que el SVG en sí se comporte como un flex item */
-    transition: all 0.4s ease;
-    
-    transform: rotate(180deg); /* La rotación se mantiene para que apunte a la izquierda */
-    
-    /* Ajusta este margen para mover la flecha más a la izquierda del texto */
-    margin-right: 0.5em; /* <--- AJUSTE CLAVE: Espacio entre la flecha y el texto "Volver" */
-    margin-left: 0em; /* Asegura que no haya margen izquierdo indeseado */
+.boton-volver:hover svg {
+  /* La transformación de hover debe reflejar la nueva posición relativa */
+  transform: rotate(180deg) translateX(5px); /* Mantendrá la rotación y moverá la flecha hacia la "derecha" de su propio eje (es decir, más hacia el texto) */
+  /* Si quieres que se mueva hacia la izquierda (alejándose del texto), usa translateX(-5px); */
 }
 
-#boton-volver:hover svg {
-    /* La transformación de hover debe reflejar la nueva posición relativa */
-    transform: rotate(180deg) translateX(5px); /* Mantendrá la rotación y moverá la flecha hacia la "derecha" de su propio eje (es decir, más hacia el texto) */
-    /* Si quieres que se mueva hacia la izquierda (alejándose del texto), usa translateX(-5px); */
-}
-
-#boton-volver .text {
-    /* margin: 0 1.5em; -- Reemplazado por el padding del botón y el margin-right del SVG */
-    /* Asegura que el texto sea visible */
-    position: relative;
-    z-index: 1;
-    /* No necesitas margen aquí si el SVG ya tiene margin-right y el botón tiene padding */
+.boton-volver .text {
+  /* margin: 0 1.5em; -- Reemplazado por el padding del botón y el margin-right del SVG */
+  /* Asegura que el texto sea visible */
+  position: relative;
+  z-index: 1;
+  /* No necesitas margen aquí si el SVG ya tiene margin-right y el botón tiene padding */
 }
 
 /* Ensure .hidden still works */
 .hidden {
-    display: none !important;
+  display: none !important;
+}
+
+#boton-volver-carrito {
+  width: auto;
+  height: auto;
+}
+
+#boton-siguiente-paso svg {
+  transition: transform 0.4s ease;
+}
+
+#boton-siguiente-paso:hover svg {
+  transform: translateX(4px);
 }

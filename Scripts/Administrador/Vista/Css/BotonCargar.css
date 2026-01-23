@@ -34,3 +34,11 @@
     background-color: #ffb935; /* Tono de morado más oscuro al hacer clic */
     transform: translateY(2px); /* Efecto de "presionado" */
 }
+
+#modificar-cafeteria{
+  padding: 2px 6px;
+}
+
+#modificar-cafeteria img {
+  filter: invert(1);
+}

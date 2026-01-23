@@ -482,16 +482,19 @@ class GestorModerador {
         }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion) {
+    async modificarEmpresa(id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia) {
         const bodyData = {
+            id: id,
             nombre: nombre,
             telefono: telefono,
             ubicacion: ubicacion,
-            id: id
+            efectivo: efectivo,
+            tarjeta: tarjeta,
+            transferencia: transferencia
         };
         
         try {
-            const response = await fetch(`/empresa/modificar`, {
+            const response = await fetch(`/empresa/modificar-para-moderador`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(bodyData),

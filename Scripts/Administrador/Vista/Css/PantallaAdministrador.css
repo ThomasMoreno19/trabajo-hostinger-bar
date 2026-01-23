@@ -3,7 +3,7 @@
 body {
     font-family: Arial, sans-serif;
     /* Un degradado más oscuro y morado */
-    background: linear-gradient(to right, #292638 0%, #100e16 100%);
+    background: #212121;
     color: #1C082B;
     display: flex;
     flex-direction: column;
@@ -96,7 +96,7 @@ p.texto-vacio {
 }
 
 .lista-central{
-    background-color: #242130;
+    background-color: #181818;
     position: relative;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);

@@ -2,24 +2,33 @@
 
 /* --- Estilos para la tarjeta de empresa individual (.empresa-item) --- */
 .listas{
-    padding: 0% 1%;  /* <-- punto y coma agregado */
+  padding: 0% 1%;  /* <-- punto y coma agregado */
+  margin: 10px;
 }
 
 .lista-central {
-    margin: 250px auto 0px;
+  margin: 220px auto 0px;
+}
+
+#lista-vacia {
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  margin-top: 20px;
 }
 
 #titulo-rubros {
-    color: #E89E13;
-    text-align: center;
-    margin: 0px;
+  color: #E89E13;
+  font-size: 22px;
+  text-align: center;
+  margin: 0px;
 }
 
 #lista-rubros {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px; /* Espacio entre los elementos de la cuadrícula */
-    padding: 10px; /* Añade un poco de padding para mejor presentación */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px; /* Espacio entre los elementos de la cuadrícula */
+  padding: 10px; /* Añade un poco de padding para mejor presentación */
 }
 
 .articulo-info {
@@ -30,7 +39,7 @@
 }
 
 .rubro {
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -114,9 +123,6 @@ p.descripcion{
 
 
 @media screen and (max-width: 600px) {
-    .lista-central{
-        margin: 280px auto 0px;
-    }
     .rubro img{
         height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
     }
