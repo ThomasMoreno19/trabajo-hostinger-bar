@@ -85,8 +85,7 @@ class PantallaAdministrador {
   }
   
   abrirModalNuevaEmpresa() {
-    const EMPRESA = new EmpresaVista();
-    const MODAL = EMPRESA.modalNuevaEmpresa();
+    const MODAL = EmpresaVista.modalNuevaEmpresa();
 
     document.body.appendChild(MODAL);
     

@@ -1,7 +1,7 @@
 <?php
 // Inicia la sesión globalmente, ya que todas las solicitudes pasan por aquí.
 session_start();
-// Detectar si estás en local o en Hostinger
+// Detectar si está en local o en Hostinger
 if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['SERVER_NAME'] === 'localhost') {
     // 🖥️ Entorno local
     require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/localBD.php';

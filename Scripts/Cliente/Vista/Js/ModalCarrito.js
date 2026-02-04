@@ -448,6 +448,7 @@ class ModalCarrito {
     }
 
     // Construyo el mensaje
+    console.log(this.datosPersonales.numeroMesa);
     if (this.datosPersonales.numeroMesa !== null) {
       var mensaje = `Mesa: ${this.datosPersonales.numeroMesa}\n####################################\n`;
     }
@@ -585,9 +586,9 @@ class ModalCarrito {
     });
 
     document.getElementById("btn-confirmar-datos").onclick = () => {
-      const numeroMesa = document.getElementById("input-numero-mesa").value.trim();
+      this.datosPersonales.numeroMesa = document.getElementById("input-numero-mesa").value.trim();
 
-      if (!numeroMesa) return;
+      if (!this.datosPersonales.numeroMesa) return;
       wrapper.remove();
       this.enviarPedidoWhatsApp();
       this.carrito.vaciarCarrito();

@@ -5,11 +5,11 @@ class EmpresaVista {
     this.nombre = empresa.nombre;
     this.telefono = empresa.telefono;
     this.ubicacion = empresa.ubicacion;
-    this.tieneCarrito = empresa.tieneCarrito;
-    this.moduloMesero = empresa.moduloMesero;
-    this.efectivo = empresa.efectivo;
-    this.tarjeta = empresa.tarjeta;
-    this.transferencia = empresa.transferencia;
+    this.tieneCarrito = empresa.tieneCarrito ?? false;
+    this.moduloMesero = empresa.moduloMesero ?? false;
+    this.efectivo = empresa.efectivo ?? false;
+    this.tarjeta = empresa.tarjeta ?? false;
+    this.transferencia = empresa.transferencia ?? false;
     this.logo_url = empresa.logo_url;
   }
 
@@ -60,7 +60,7 @@ class EmpresaVista {
     }
   }
   
-  modalNuevaEmpresa() {
+  static modalNuevaEmpresa() {
     const modalNuevaEmpresa = document.createElement('div');
     modalNuevaEmpresa.classList.add('modal-backdrop');
     modalNuevaEmpresa.id = 'modalNuevaEmpresa';
