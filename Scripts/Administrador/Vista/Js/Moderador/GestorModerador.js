@@ -580,6 +580,44 @@ class GestorModerador {
     
     
     
+
+    async guardarDiasNoLaborales(dias_no_laborales, id_empresa) {
+        const bodyData = {
+            id_empresa,
+            dias_no_laborales
+        };
+
+        const response = await fetch(`/empresa/guardar-dias-no-laborales`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(bodyData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error guardando días no laborales' }));
+            throw new Error(err.error || 'Error guardando días no laborales');
+        }
+
+        return await response.json();
+    }
+
+    async obtenerDiasNoLaborales(id_empresa) {
+        const bodyData = { id_empresa };
+
+        const response = await fetch(`/empresa/mostrar-dias-no-laborales`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(bodyData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error obteniendo días no laborales' }));
+            throw new Error(err.error || 'Error obteniendo días no laborales');
+        }
+
+        return await response.json();
+    }
+
     async loguearModerador(nombre, contrasena) {
         try {
             const bodyData = {

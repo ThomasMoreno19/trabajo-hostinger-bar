@@ -8,6 +8,7 @@ class PantallaModerador {
     this.listaCentral = document.getElementById('lista-central');
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
+    this.diasNoLaboralesGuardados = [];
     this.MINUTOS_DIA = 1440;
     
     this.botonListaArticulos = document.getElementById('boton-mostrar-articulos');
@@ -393,6 +394,7 @@ class PantallaModerador {
     const botonSecccionModificar = document.getElementById('seccion-modificar');
     const botonVisitarPagina = document.getElementById('visitar-pagina');
     const botonConfigurarHorarios = document.getElementById('configurar-horarios');
+    const botonConfigurarDiasNoLaborales = document.getElementById('configurar-dias-no-laborales');
 
     
     const botonVisitarGestion = document.getElementById('visitar-gestion');
@@ -424,6 +426,12 @@ class PantallaModerador {
     botonConfigurarHorarios.addEventListener('click', async (event) => {
       event.preventDefault();
       await this.abrirModalConfigurarHorarios(modal);
+      document.body.removeChild(modal);
+    });
+
+    botonConfigurarDiasNoLaborales.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarDiasNoLaborales(modal);
       document.body.removeChild(modal);
     });
   }
@@ -588,6 +596,172 @@ class PantallaModerador {
 
   }
   
+  async abrirModalConfigurarDiasNoLaborales() {
+    const modal = this.empresa.modalConfigurarDiasNoLaborales();
+    this.listaCentral.classList.add('hidden');
+
+    document.body.appendChild(modal);
+
+    const botonCerrar = modal.querySelector('#cerrar-wrapper');
+    const botonAgregarDia = modal.querySelector('#agregarDiaNoLaboral');
+    const botonAgregarRango = modal.querySelector('#agregarRangoNoLaboral');
+    const form = modal.querySelector('#formConfigurarDiasNoLaborales');
+
+    try {
+      const respuesta = await this.gestor.obtenerDiasNoLaborales(this.empresa.id);
+      this.diasNoLaboralesGuardados = Array.isArray(respuesta.dias_no_laborales)
+        ? [...new Set(respuesta.dias_no_laborales)]
+        : [];
+    } catch (error) {
+      this.diasNoLaboralesGuardados = [];
+      console.warn('No se pudieron cargar los días no laborales previos.', error);
+    }
+
+    this.renderDiasNoLaboralesEnModal(modal);
+
+    botonCerrar.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.listaCentral.classList.remove('hidden');
+      modal.classList.add('hidden');
+      document.body.removeChild(modal);
+    });
+
+    botonAgregarDia.addEventListener('click', () => {
+      const inputFecha = modal.querySelector('#fechaNoLaboral');
+      const fecha = inputFecha.value;
+
+      if (!fecha) {
+        alert('Seleccioná una fecha para agregar.');
+        return;
+      }
+
+      this.agregarFechaNoLaboral(fecha);
+      inputFecha.value = '';
+      this.renderDiasNoLaboralesEnModal(modal);
+    });
+
+    botonAgregarRango.addEventListener('click', () => {
+      const desde = modal.querySelector('#fechaNoLaboralInicio').value;
+      const hasta = modal.querySelector('#fechaNoLaboralFin').value;
+
+      if (!desde || !hasta) {
+        alert('Tenés que seleccionar fecha de inicio y fecha de fin.');
+        return;
+      }
+
+      if (new Date(desde) > new Date(hasta)) {
+        alert('La fecha de inicio no puede ser mayor a la fecha de fin.');
+        return;
+      }
+
+      this.agregarRangoNoLaboral(desde, hasta);
+      modal.querySelector('#fechaNoLaboralInicio').value = '';
+      modal.querySelector('#fechaNoLaboralFin').value = '';
+      this.renderDiasNoLaboralesEnModal(modal);
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!this.diasNoLaboralesGuardados.length) {
+        alert('No hay días no laborales cargados para guardar.');
+        return;
+      }
+
+      try {
+        await this.gestor.guardarDiasNoLaborales(this.diasNoLaboralesGuardados, this.empresa.id);
+        alert('Días no laborales guardados correctamente ✔️');
+
+        this.listaCentral.classList.remove('hidden');
+        modal.classList.add('hidden');
+        document.body.removeChild(modal);
+      } catch (error) {
+        alert(`Error guardando días no laborales: ${error.message}`);
+      }
+    });
+  }
+
+  agregarFechaNoLaboral(fechaISO) {
+    const fechaFormateada = this.formatearFechaMMDD(fechaISO);
+
+    if (!fechaFormateada) {
+      alert('La fecha seleccionada no es válida.');
+      return;
+    }
+
+    if (!this.diasNoLaboralesGuardados.includes(fechaFormateada)) {
+      this.diasNoLaboralesGuardados.push(fechaFormateada);
+    }
+  }
+
+  agregarRangoNoLaboral(inicioISO, finISO) {
+    let cursor = new Date(`${inicioISO}T00:00:00`);
+    const fin = new Date(`${finISO}T00:00:00`);
+
+    while (cursor <= fin) {
+      const yyyy = cursor.getFullYear();
+      const mm = String(cursor.getMonth() + 1).padStart(2, '0');
+      const dd = String(cursor.getDate()).padStart(2, '0');
+      this.agregarFechaNoLaboral(`${yyyy}-${mm}-${dd}`);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+
+  formatearFechaMMDD(fechaISO) {
+    if (!fechaISO || !fechaISO.includes('-')) return null;
+    const [, mes, dia] = fechaISO.split('-');
+    if (!mes || !dia) return null;
+    return `${dia}/${mes}`;
+  }
+
+  renderDiasNoLaboralesEnModal(modal) {
+    const contenedor = modal.querySelector('#listaDiasNoLaborales');
+    const btnGuardar = modal.querySelector('#btnGuardarDiasNoLaborales');
+
+    contenedor.innerHTML = '';
+
+    if (!this.diasNoLaboralesGuardados || this.diasNoLaboralesGuardados.length === 0) {
+      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
+        Todavía no cargaste días no laborales.
+      </p>`;
+
+      if (btnGuardar) btnGuardar.disabled = true;
+      return;
+    }
+
+    if (btnGuardar) btnGuardar.disabled = false;
+
+    const ordenados = [...this.diasNoLaboralesGuardados].sort((a, b) => {
+      const [diaA, mesA] = a.split('/').map(Number);
+      const [diaB, mesB] = b.split('/').map(Number);
+      if (mesA !== mesB) return mesA - mesB;
+      return diaA - diaB;
+    });
+
+    ordenados.forEach((fecha) => {
+      const card = document.createElement('div');
+      card.classList.add('horario-card');
+
+      card.innerHTML = `
+        <button type="button" class="btn-eliminar-horario" data-fecha="${fecha}">
+          ✖
+        </button>
+        <div class="horario-dia">${fecha}</div>
+      `;
+
+      contenedor.appendChild(card);
+    });
+
+    contenedor.querySelectorAll('.btn-eliminar-horario').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fecha = btn.dataset.fecha;
+        this.diasNoLaboralesGuardados = this.diasNoLaboralesGuardados.filter((d) => d !== fecha);
+        this.renderDiasNoLaboralesEnModal(modal);
+      });
+    });
+  }
+
+
   async abrirModalCambiarLogo(modalPadre) {
     const modal = this.empresa.modalCambiarLogo();
     

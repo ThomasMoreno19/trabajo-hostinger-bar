@@ -62,6 +62,14 @@ class GestorEmpresa {
       case 'guardar-horarios':
         $this->guardarHorarios();
         break;
+
+      case 'guardar-dias-no-laborales':
+        $this->guardarDiasNoLaborales();
+        break;
+
+      case 'mostrar-dias-no-laborales':
+        $this->mostrarDiasNoLaborales();
+        break;
       
       default:
         http_response_code(404);
@@ -342,4 +350,51 @@ class GestorEmpresa {
   }
 
   
+
+  private function guardarDiasNoLaborales(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $dias_no_laborales = $datos['dias_no_laborales'] ?? null;
+
+    if (empty($id_empresa) || !is_array($dias_no_laborales)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para guardar los días no laborales.']);
+      return;
+    }
+
+    try {
+      $diasGuardados = $this->empresaRepositorio->guardarDiasNoLaborales($id_empresa, $dias_no_laborales);
+      http_response_code(200);
+      echo json_encode([
+        'message' => 'Días no laborales guardados correctamente.',
+        'dias_no_laborales' => $diasGuardados
+      ]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al guardar los días no laborales: ' . $e->getMessage()]);
+    }
+  }
+
+  private function mostrarDiasNoLaborales(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar días no laborales.']);
+      return;
+    }
+
+    try {
+      $diasNoLaborales = $this->empresaRepositorio->obtenerDiasNoLaborales($id_empresa);
+      http_response_code(200);
+      echo json_encode(['dias_no_laborales' => $diasNoLaborales]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mostrar los días no laborales: ' . $e->getMessage()]);
+    }
+  }
+
 }

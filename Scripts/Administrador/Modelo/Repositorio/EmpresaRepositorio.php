@@ -267,6 +267,69 @@ class EmpresaRepositorio {
   }
 
 
+  public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array {
+    try {
+      $this->pdo->beginTransaction();
+
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM dias_no_laborales_empresa WHERE id_empresa = :id_empresa"
+      );
+      $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtDelete->execute();
+
+      $stmtInsert = $this->pdo->prepare(
+        "INSERT INTO dias_no_laborales_empresa (id_empresa, dia_mes)
+        VALUES (:id_empresa, :dia_mes)"
+      );
+
+      $diasLimpios = [];
+
+      foreach ($dias_no_laborales as $dia_mes) {
+        if (!is_string($dia_mes) || !preg_match('/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/', $dia_mes)) {
+          throw new Exception("Formato inválido de día no laboral: $dia_mes");
+        }
+
+        $diasLimpios[$dia_mes] = true;
+      }
+
+      $diasOrdenados = array_keys($diasLimpios);
+      sort($diasOrdenados);
+
+      foreach ($diasOrdenados as $dia_mes) {
+        $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+        $stmtInsert->bindParam(':dia_mes', $dia_mes, PDO::PARAM_STR);
+        $stmtInsert->execute();
+      }
+
+      $this->pdo->commit();
+      return $diasOrdenados;
+
+    } catch (Exception $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      error_log("Error al guardar días no laborales (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function obtenerDiasNoLaborales(int $id_empresa): array {
+    try {
+      $stmt = $this->pdo->prepare(
+        "SELECT dia_mes FROM dias_no_laborales_empresa WHERE id_empresa = :id_empresa ORDER BY dia_mes ASC"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    } catch (PDOException $e) {
+      error_log("Error al obtener días no laborales (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+
   
   public function sosAtributo(string $atributo) {
     $atributosPermitidos = ['nombre', 'fecha_creacion'];
