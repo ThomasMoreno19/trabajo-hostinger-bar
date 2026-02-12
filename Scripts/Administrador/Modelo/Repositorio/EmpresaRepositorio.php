@@ -208,9 +208,69 @@ class EmpresaRepositorio {
     return null;
   }
   
+  public function guardarHorarios(int $id_empresa, array $horarios): bool {
+    try {
+      $this->pdo->beginTransaction();
+
+      // 1) Borrar horarios anteriores
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM horarios_empresa WHERE id_empresa = :id_empresa"
+      );
+      $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtDelete->execute();
+
+      // 2) Preparar insert
+      $stmtInsert = $this->pdo->prepare(
+        "INSERT INTO horarios_empresa (id_empresa, dia_semana, hora_apertura, hora_cierre)
+        VALUES (:id_empresa, :dia_semana, :hora_apertura, :hora_cierre)"
+      );
+
+      // 3) Recorrer tu payload agrupado
+      foreach ($horarios as $diaObj) {
+
+        if (!isset($diaObj['diaIndex'], $diaObj['rangos']) || !is_array($diaObj['rangos'])) {
+          throw new Exception("Formato de horario inválido (día sin rangos).");
+        }
+
+        $dia_semana = (int)$diaObj['diaIndex'];
+
+        if ($dia_semana < 0 || $dia_semana > 6) {
+          throw new Exception("Día inválido: $dia_semana");
+        }
+
+        foreach ($diaObj['rangos'] as $rango) {
+
+          if (!isset($rango['apertura'], $rango['cierre'])) {
+            throw new Exception("Formato de rango inválido.");
+          }
+
+          $apertura = $rango['apertura'];
+          $cierre = $rango['cierre'];
+
+          $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+          $stmtInsert->bindParam(':dia_semana', $dia_semana, PDO::PARAM_INT);
+          $stmtInsert->bindParam(':hora_apertura', $apertura, PDO::PARAM_STR);
+          $stmtInsert->bindParam(':hora_cierre', $cierre, PDO::PARAM_STR);
+
+          $stmtInsert->execute();
+        }
+      }
+
+      $this->pdo->commit();
+      return true;
+
+    } catch (Exception $e) {
+      $this->pdo->rollBack();
+      error_log("Error al guardar horarios (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+
   
   public function sosAtributo(string $atributo) {
     $atributosPermitidos = ['nombre', 'fecha_creacion'];
     return in_array($atributo, $atributosPermitidos);
   }
+
 }

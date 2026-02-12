@@ -562,6 +562,20 @@ class GestorModerador {
         // Reemplaza saltos de línea (\r, \n, \r\n) por una coma y espacio
         return texto.replace(/[\r\n]+/g, ', ').trim();
     }
+
+    guardarHorarios(horarios, id_empresa) {
+
+        const bodyData = {
+            id_empresa: id_empresa,
+            horarios: horarios
+        };
+
+        fetch(`/empresa/guardar-horarios`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(bodyData),
+        });
+    }
     
     
     

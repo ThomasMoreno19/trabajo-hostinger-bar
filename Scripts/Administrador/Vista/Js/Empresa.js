@@ -143,6 +143,84 @@ class EmpresaVista {
     
     return modalNuevaEmpresa;
   }
+
+  modalConfigurarHorarios() {
+    const modalHorarios = document.createElement('div');
+    modalHorarios.classList.add('wrapper');
+    modalHorarios.id = 'modalConfigurarHorarios';
+
+    const modalHorarioContenido = document.createElement('div');
+    modalHorarioContenido.classList.add('wrapper-content');
+    
+    const dias = DIAS_SEMANA.map(nombre => ({
+      nombre,
+      abierto: false,
+      horaApertura: '',
+      horaCierre: ''
+    }));
+
+    const botonesDiasHTML = dias.map((dia, index) => `
+      <button type="button"
+          id="btnDia${index}"
+          class="toggle-btn ${dia.abierto ? 'active' : ''}">
+        ${dia.nombre}
+      </button>
+    `).join('');
+
+    const htmlContent = `
+      <form id="formConfigurarHorariosEmpresa">
+        <header id="header-wrapper">
+          <h2 id="titulo-wrapper" class="titulo">Configuración de Horarios</h2>
+          <button id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+        </header>
+
+        <div class="modulos">
+          <text id="titulo-modulos"> Seleccione los días de apertura </text>
+
+          <div class="lista-botones">
+            ${botonesDiasHTML}
+          </div>
+
+          <div class="form-group">
+            <label for="horaApertura">Hora de Apertura:</label>
+            <input type="time" id="horaApertura" name="horaApertura" required>
+          </div>
+
+          <div class="form-group">
+            <label for="horaCierre">Hora de Cierre:</label>
+            <input type="time" id="horaCierre" name="horaCierre" required>
+          </div>
+
+          <!-- ESTE submit es para REGISTRAR en el array -->
+          <button type="submit" class="boton" id="boton-registrar-horarios">
+            + Registrar
+          </button>
+          
+        </div>
+
+        <div class="lista-horarios"></div>
+          <!-- LISTA DE HORARIOS -->
+          <h3 class="subtitulo-horarios">Horarios registrados</h3>
+          <div id="listaHorariosRegistrados" class="horarios-grid"></div>
+        </div>
+
+
+        <!-- BOTÓN FINAL -->
+        <div class="boton-final-container">
+          <button type="button" class="boton boton-final disabled" id="btnGuardarHorarios">
+            Guardar
+          </button>
+        </div>
+      </form>
+    `;
+
+
+    modalHorarioContenido.innerHTML = htmlContent;
+    modalHorarios.appendChild(modalHorarioContenido);
+
+
+    return modalHorarios;
+  }
   
   
   
@@ -239,6 +317,7 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "seccion-modificar" >Modificar datos</button>
         <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
+        <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;
@@ -307,6 +386,18 @@ class EmpresaVista {
       </form>
     `;
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
+    if (!this.tieneCarrito) {
+      const listaBotones = modalNuevaEmpresaContenido.querySelector('.lista-botones');
+      const btnEfectivo = modalNuevaEmpresaContenido.querySelector('#btnEfectivo');
+      const btnTarjeta = modalNuevaEmpresaContenido.querySelector('#btnTarjeta');
+      const btnTransferencia = modalNuevaEmpresaContenido.querySelector('#btnTransferencia');
+      const textoMetodosPago = modalNuevaEmpresaContenido.querySelector('#titulo-modulos');
+      listaBotones.classList.add('hidden');
+      textoMetodosPago.classList.add('hidden');
+      btnEfectivo.classList.add('hidden');
+      btnTarjeta.classList.add('hidden');
+      btnTransferencia.classList.add('hidden');
+    }
 
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
     

@@ -1,12 +1,14 @@
 // Scripts/Administrador/Vista/Js/PantallaModerador.js
 class PantallaModerador {
-  
   constructor() {
     // Inicializamos el Gestor y los elementos del DOM
     this.gestor = new GestorModerador();
     this.listaArticulos = document.getElementById('lista-articulos');
     this.listaRubros = document.getElementById('lista-rubros');
+    this.listaCentral = document.getElementById('lista-central');
     this.articuloSeleccionado = null;
+    this.horariosGuardados = [];
+    this.MINUTOS_DIA = 1440;
     
     this.botonListaArticulos = document.getElementById('boton-mostrar-articulos');
     this.botonListaRubros = document.getElementById('boton-mostrar-rubros');
@@ -389,9 +391,12 @@ class PantallaModerador {
     document.body.appendChild(modal);
     const botonCambiarLogo = document.getElementById('cambiar-logo');
     const botonSecccionModificar = document.getElementById('seccion-modificar');
+    const botonVisitarPagina = document.getElementById('visitar-pagina');
+    const botonConfigurarHorarios = document.getElementById('configurar-horarios');
+
+    
     const botonVisitarGestion = document.getElementById('visitar-gestion');
     botonVisitarGestion.classList.add('hidden');
-    const botonVisitarPagina = document.getElementById('visitar-pagina');
     
     //Se cierra el modal si se clickea afuera
     modal.addEventListener('click', (event) => {
@@ -415,6 +420,172 @@ class PantallaModerador {
       await this.abrirModalCambiarLogo(modal);
       document.body.removeChild(modal);
     });
+
+    botonConfigurarHorarios.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarHorarios(modal);
+      document.body.removeChild(modal);
+    });
+  }
+
+  async abrirModalConfigurarHorarios() {
+    const modal = this.empresa.modalConfigurarHorarios();
+    this.listaCentral.classList.add('hidden');
+
+    document.body.appendChild(modal);
+
+    const botonCerrar = document.getElementById('cerrar-wrapper');
+
+    if (botonCerrar) {
+      botonCerrar.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const hayHorarios = this.horariosGuardados && this.horariosGuardados.length > 0;
+
+        if (hayHorarios) {
+          const seguro = confirm(
+            "¿Estás seguro de que querés salir?\nSe borrará tu progreso."
+          );
+
+          if (!seguro) return;
+        }
+
+        // si confirma o no había horarios:
+        this.horariosGuardados = []; // 🔥 borra progreso
+
+        this.listaCentral.classList.remove("hidden");
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+      });
+    }
+
+    
+    const botonesDias = modal.querySelectorAll('.toggle-btn');
+    // Listener para los botones de dias de la semana
+    botonesDias.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+      });
+    });
+
+
+    const form = document.getElementById("formConfigurarHorariosEmpresa");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const horaApertura = document.getElementById("horaApertura").value;
+      const horaCierre = document.getElementById("horaCierre").value;
+
+      if (!horaApertura || !horaCierre) {
+        alert("Tenés que elegir hora de apertura y cierre");
+        return;
+      }
+
+      const botonesActivos = modal.querySelectorAll(".toggle-btn.active");
+
+      if (botonesActivos.length === 0) {
+        alert("Tenés que seleccionar al menos un día");
+        return;
+      }
+
+      // Armamos nuevos horarios
+      const nuevosHorarios = Array.from(botonesActivos).map((btn) => {
+        const diaNombre = btn.textContent.trim();
+
+        const diaIndex = DIAS_SEMANA.indexOf(diaNombre);
+        const nombreDia = NOMBRE_DIAS[diaIndex];
+
+        return {
+          dia: diaNombre,
+          nombre: nombreDia,
+          diaIndex,
+          apertura: horaApertura,
+          cierre: horaCierre,
+        };
+      });
+
+      // Validar choque
+
+      const horariosExistentesPlano = this.aplanarHorariosGuardados();
+
+      const error = this.validarNoSuperposicion(nuevosHorarios, horariosExistentesPlano);
+
+      if (error) {
+        alert("No se puede guardar: ese horario pisa otro.");
+        return;
+      }
+
+      // Guardar (agrupando por día)
+      nuevosHorarios.forEach((nuevo) => {
+        const existente = this.horariosGuardados.find(h => h.diaIndex === nuevo.diaIndex);
+
+        if (existente) {
+          // Si ya existe el día, agregamos un rango nuevo
+          existente.rangos.push({
+            apertura: nuevo.apertura,
+            cierre: nuevo.cierre,
+          });
+        } else {
+          // Si no existe, creamos el día con su primer rango
+          this.horariosGuardados.push({
+            dia: nuevo.dia,
+            nombre: nuevo.nombre,
+            diaIndex: nuevo.diaIndex,
+            rangos: [{
+              apertura: nuevo.apertura,
+              cierre: nuevo.cierre,
+            }]
+          });
+        }
+      });
+
+      // Reset del formulario (para seguir cargando más)
+      botonesActivos.forEach((btn) => btn.classList.remove("active"));
+      document.getElementById("horaApertura").value = "";
+      document.getElementById("horaCierre").value = "";
+
+      // Render
+      this.renderHorariosEnModal(modal);
+    });
+
+    const btnGuardar = modal.querySelector("#btnGuardarHorarios");
+    btnGuardar.addEventListener("click", async () => {
+      if (!this.horariosGuardados || this.horariosGuardados.length === 0) {
+        alert("No hay horarios cargados para guardar.");
+        return;
+      }
+
+      // 🔥 Payload recomendado
+      const horarios = this.horariosGuardados.map((d) => ({
+        diaIndex: d.diaIndex,
+        dia: d.dia,
+        rangos: d.rangos.map((r) => ({
+          apertura: r.apertura,
+          cierre: r.cierre,
+        })),
+      }));
+
+      try {
+        await this.gestor.guardarHorarios(horarios, this.empresa.id);
+
+        alert("Horarios guardados correctamente ✔️");
+
+        // limpiar progreso
+        this.horariosGuardados = [];
+        this.renderHorariosEnModal(modal);
+
+        // cerrar modal
+        this.listaCentral.classList.remove("hidden");
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+
+      } catch (error) {
+        alert(`Error guardando horarios: ${error.message}`);
+      }
+    });
+
+
   }
   
   async abrirModalCambiarLogo(modalPadre) {
@@ -527,6 +698,175 @@ class PantallaModerador {
       .replace(/[\u0300-\u036f]/g, '')     // Elimina marcas diacríticas (tildes, acentos, etc.)
       .toLowerCase();                      // Convierte a minúsculas
   }
+
+  renderHorariosEnModal(modal) {
+    const contenedor = modal.querySelector("#listaHorariosRegistrados");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    // 🔥 botón guardar
+    const btnGuardar = modal.querySelector("#btnGuardarHorarios");
+
+    if (!this.horariosGuardados || this.horariosGuardados.length === 0) {
+      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
+        Todavía no cargaste horarios.
+      </p>`;
+
+      if (btnGuardar) btnGuardar.disabled = true;
+      return;
+    }
+
+    if (btnGuardar) btnGuardar.disabled = false;
+
+    const ordenados = [...this.horariosGuardados].sort(
+      (a, b) => a.diaIndex - b.diaIndex
+    );
+
+    for (const dia of ordenados) {
+      const card = document.createElement("div");
+      card.classList.add("horario-card");
+
+      const rangosOrdenados = [...dia.rangos].sort((a, b) =>
+        a.apertura.localeCompare(b.apertura)
+      );
+
+      const rangosHTML = rangosOrdenados
+        .map(
+          (r) => `
+            <div class="horario-linea">Apertura: ${r.apertura}</div>
+            <div class="horario-linea">Cierre: ${r.cierre}</div>
+          `
+        )
+        .join("");
+
+      card.innerHTML = `
+        <button type="button" class="btn-eliminar-horario" data-diaindex="${dia.diaIndex}">
+          ✖
+        </button>
+
+        <div class="horario-dia">${dia.nombre}</div>
+        ${rangosHTML}
+      `;
+
+      contenedor.appendChild(card);
+    }
+
+    // ✅ Listener eliminar (delegación)
+    contenedor.querySelectorAll(".btn-eliminar-horario").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const diaIndex = Number(btn.dataset.diaindex);
+
+        this.horariosGuardados = this.horariosGuardados.filter(
+          (h) => h.diaIndex !== diaIndex
+        );
+
+        this.renderHorariosEnModal(modal);
+      });
+    });
+  }
+
+
+
+
+  timeToMinutes(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  // Devuelve segmentos en "timeline semanal"
+  // Ej: Lunes 19:00-02:00 => [{start:1140, end:1560}]
+  toSegments(diaIndex, apertura, cierre) {
+    const startMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(apertura);
+    let endMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(cierre);
+
+    // Si cierre <= apertura => cruza medianoche
+    if (this.timeToMinutes(cierre) <= this.timeToMinutes(apertura)) {
+      endMin += this.MINUTOS_DIA;
+    }
+
+    return [{ start: startMin, end: endMin }];
+  }
+
+  // Detecta si dos rangos se pisan
+  overlap(a, b) {
+    return a.start < b.end && b.start < a.end;
+  }
+
+  validarNoSuperposicion(nuevosHorarios, horariosExistentes) {
+    const existentesSeg = [];
+    const nuevosSeg = [];
+
+    // EXISTENTES -> segmentos
+    for (const h of horariosExistentes) {
+      const segs = this.toSegments(h.diaIndex, h.apertura, h.cierre);
+
+      for (const s of segs) {
+        existentesSeg.push({
+          dia: h.dia,
+          start: s.start,
+          end: s.end,
+        });
+      }
+    }
+
+    // NUEVOS -> segmentos
+    for (const h of nuevosHorarios) {
+      const segs = this.toSegments(h.diaIndex, h.apertura, h.cierre);
+
+      for (const s of segs) {
+        nuevosSeg.push({
+          dia: h.dia,
+          start: s.start,
+          end: s.end,
+        });
+      }
+    }
+
+    // Comparar nuevos contra existentes
+    for (const nuevo of nuevosSeg) {
+      for (const existente of existentesSeg) {
+        if (this.overlap(nuevo, existente)) {
+          return `El horario de ${nuevo.dia} pisa otro horario existente.`;
+        }
+
+        const semana = 7 * this.MINUTOS_DIA;
+
+        const nuevoPlus = { start: nuevo.start + semana, end: nuevo.end + semana };
+        const existentePlus = { start: existente.start + semana, end: existente.end + semana };
+
+        if (this.overlap(nuevoPlus, existente)) return `Hay choque de horarios (por cruce semanal).`;
+        if (this.overlap(nuevo, existentePlus)) return `Hay choque de horarios (por cruce semanal).`;
+      }
+    }
+
+    // Comparar nuevos entre sí
+    for (let i = 0; i < nuevosSeg.length; i++) {
+      for (let j = i + 1; j < nuevosSeg.length; j++) {
+        if (this.overlap(nuevosSeg[i], nuevosSeg[j])) {
+          return `Los nuevos horarios se pisan entre sí (${nuevosSeg[i].dia} con ${nuevosSeg[j].dia}).`;
+        }
+      }
+    }
+
+    return null;
+  }
+
+
+  aplanarHorariosGuardados() {
+    return this.horariosGuardados.flatMap((dia) =>
+      dia.rangos.map((r) => ({
+        dia: dia.dia,
+        nombre: dia.nombre,
+        diaIndex: dia.diaIndex,
+        apertura: r.apertura,
+        cierre: r.cierre,
+      }))
+    );
+  }
+
+
+
 }
 
 

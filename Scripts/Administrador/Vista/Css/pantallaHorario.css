@@ -1,0 +1,187 @@
+.wrapper {
+    position: fixed;
+    inset: 0;
+    background-color: #222;
+    z-index: 1000;
+
+
+    overflow-y: auto; /* permite que el modal crezca y la pantalla haga scroll */
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* el modal arranca arriba y crece para abajo */
+    color: white;
+}
+
+.wrapper-content {
+  width: 100%;
+  padding: 0px 10px;
+  padding-bottom: 100px;
+}
+
+h2{
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+    margin: auto auto;
+    width: 100%;
+}
+
+.modulos {
+    margin-bottom: 20px;
+    padding: 0px 10px;
+}
+
+.boton-cerrar {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 38px;
+    color: white;
+}
+
+#header-wrapper {
+    display: flex;
+    position: relative;
+    padding: 5px 20px;
+    background: #222;
+    border-bottom: 2px solid #333;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.boton {
+    background-color: #e89e13;
+    border: none;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+    width: fit-content;
+    font-size: 19px;
+    font-weight: bold;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+}
+
+/* Inputs tipo Samsung */
+input[type="time"] {
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 0 16px;
+  outline: none;
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Focus estilo One UI */
+input[type="time"]:focus {
+  border-color: rgba(45, 125, 255, 0.9);
+  box-shadow: 0 0 0 4px rgba(45, 125, 255, 0.25);
+}
+
+/* Hace que el iconito del reloj se vea claro (Chrome/Edge) */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.time-picker {
+  margin-top: 14px;
+  width: 300px;
+}
+
+.time-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 10px;
+}
+
+.horario-card{
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 14px;
+  width: fit-content;
+}
+
+.horario-dia{
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.horario-linea{
+  color: rgb(169 169 169);
+  font-size: 15px;
+}
+
+#horario-cierre{
+  margin-bottom: 9px;
+}
+
+.subtitulo-horarios{
+  padding: 0px 10px;
+}
+
+.horarios-grid{
+  padding: 0px 10px;
+  display: flex;
+  flex-wrap: wrap;          /* 🔥 esto hace que bajen de línea */
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.boton-final-container{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  background: rgba(34, 34, 34, 0.95);
+  border-top: 2px solid #333;
+
+  padding: 14px 18px;
+  z-index: 2000;
+
+  display: flex;
+  justify-content: flex-end; /* botón a la derecha */
+  align-items: center;
+}
+
+.boton-final{
+  margin: 0;
+  left: auto;
+}
+
+.boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lista-horarios {
+  padding: 0px 10px;
+}
+
+.btn-eliminar-horario {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 60, 60, 0.9);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 5px 9px;
+  cursor: pointer;
+}

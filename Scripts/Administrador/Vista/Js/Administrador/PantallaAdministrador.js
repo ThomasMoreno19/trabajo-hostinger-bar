@@ -50,6 +50,8 @@ class PantallaAdministrador {
     
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(MODAL);
+    const BOTON_CONFIGURAR_HORARIOS = document.getElementById('configurar-horarios');
+    BOTON_CONFIGURAR_HORARIOS.classList.add('hidden');
     const BOTON_CAMBIAR_LOGO = document.getElementById('cambiar-logo');
     const BOTON_SECCION_MODIFICAR = document.getElementById('seccion-modificar');
     const BOTON_GESTION_ARTICULOS = document.getElementById('visitar-gestion');

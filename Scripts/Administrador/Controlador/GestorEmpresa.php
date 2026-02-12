@@ -59,6 +59,10 @@ class GestorEmpresa {
         $this->modificarLogo();
         break;
       
+      case 'guardar-horarios':
+        $this->guardarHorarios();
+        break;
+      
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Empresa.']);
@@ -312,6 +316,28 @@ class GestorEmpresa {
 
     if (file_exists($cacheFile)) {
       @unlink($cacheFile);
+    }
+  }
+
+  private function guardarHorarios(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)$datos['id_empresa'];
+    $horarios = $datos['horarios'];
+
+    if (empty($id_empresa) || !is_array($horarios)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para guardar los horarios.']);
+      return;
+    }
+
+    try {
+      $this->empresaRepositorio->guardarHorarios($id_empresa, $horarios);
+      http_response_code(200);
+      echo json_encode(['message' => 'Horarios guardados correctamente.']);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al guardar los horarios: ' . $e->getMessage()]);
     }
   }
 

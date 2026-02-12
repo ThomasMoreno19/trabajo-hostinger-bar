@@ -448,7 +448,6 @@ class ModalCarrito {
     }
 
     // Construyo el mensaje
-    console.log(this.datosPersonales.numeroMesa);
     if (this.datosPersonales.numeroMesa !== null) {
       var mensaje = `Mesa: ${this.datosPersonales.numeroMesa}\n####################################\n`;
     }
