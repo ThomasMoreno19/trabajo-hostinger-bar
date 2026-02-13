@@ -27,6 +27,7 @@ class PantallaCliente {
       this.carrito = new Carrito();
       this.articulo = null;
       this.listaArticulosSeleccionados = [];
+      this.horarios = { horarios: [], noLab: [] };
       // Almacenamiento de referencias a los elementos del DOM
       this.todosLosArticulos = [];
       this.todosLosRubros = [];
@@ -51,6 +52,18 @@ class PantallaCliente {
           document.head.appendChild(link);
         }
       }
+      if (this.conocerEsMesero()) {
+        await this.solicitarContrasenaMesero();
+      }
+
+      try {
+        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
+        console.log('Hora actual:', this.horarios);
+      } catch (error) {
+        console.warn('No se pudieron cargar horarios/no laborables:', error);
+        this.horarios = { horarios: [], noLab: [] };
+      }
+
       const textoAdicional = '- Carta';
       await this.mostrarLogoEmpresa();
       await this.empresa.asignarIconoYPagina(textoAdicional);
@@ -435,6 +448,78 @@ class PantallaCliente {
       return (slug === 'mesero' && this.empresa.moduloMesero);
     }
     
+
+    async solicitarContrasenaMesero() {
+      const key = `mesero_auth_${this.conocerSlug(2)}`;
+      if (sessionStorage.getItem(key) === 'ok') return;
+
+      const wrapper = document.createElement('div');
+      wrapper.id = 'modal-contrasena-mesero';
+      wrapper.style.position = 'fixed';
+      wrapper.style.inset = '0';
+      wrapper.style.background = 'rgba(0,0,0,0.88)';
+      wrapper.style.zIndex = '9999';
+      wrapper.style.display = 'flex';
+      wrapper.style.alignItems = 'center';
+      wrapper.style.justifyContent = 'center';
+
+      wrapper.innerHTML = `
+        <div style="width:min(92vw,420px);background:#1f1f1f;border:1px solid #444;border-radius:12px;padding:22px;color:#fff;">
+          <h2 style="margin:0 0 12px 0;text-align:center;">Acceso Mesero</h2>
+          <p style="margin:0 0 14px 0;opacity:.9;">Ingresá la contraseña para continuar.</p>
+          <input id="input-contrasena-mesero" type="password" placeholder="Contraseña" style="width:100%;height:44px;border-radius:10px;border:1px solid #555;background:#2c2c2c;color:#fff;padding:0 12px;">
+          <button id="btn-validar-contrasena-mesero" style="margin-top:14px;width:100%;height:44px;border:none;border-radius:10px;background:#e89e13;color:#fff;font-weight:700;cursor:pointer;">Ingresar</button>
+          <p id="error-contrasena-mesero" style="min-height:20px;color:#ff7b7b;margin:10px 0 0 0;"></p>
+        </div>
+      `;
+
+      document.body.appendChild(wrapper);
+
+      const input = wrapper.querySelector('#input-contrasena-mesero');
+      const btn = wrapper.querySelector('#btn-validar-contrasena-mesero');
+      const error = wrapper.querySelector('#error-contrasena-mesero');
+
+      const validar = async () => {
+        const contrasena = input.value.trim();
+        if (!contrasena) {
+          error.textContent = 'Ingresá una contraseña.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Validando...';
+
+        try {
+          const resp = await this.gestor.verificarContrasenaMesero(this.empresa.id, contrasena);
+          if (resp.valida) {
+            sessionStorage.setItem(key, 'ok');
+            wrapper.remove();
+            return;
+          }
+          error.textContent = 'Contraseña incorrecta.';
+        } catch (e) {
+          error.textContent = 'No se pudo validar la contraseña.';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Ingresar';
+        }
+      };
+
+      btn.addEventListener('click', validar);
+      input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          await validar();
+        }
+      });
+
+      input.focus();
+
+      while (document.body.contains(wrapper)) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
     async mostrarLogoEmpresa() {
       try {
         // 1. Mostrar el logo de la empresa
@@ -598,7 +683,8 @@ class PantallaCliente {
           this.cantidadArticulosCarrito.textContent = 0;
           this.botonCarrito.classList.add('hidden');
         },
-        this.conocerEsMesero()
+        this.conocerEsMesero(),
+        this.horarios
       );
       this.listaCentral.classList.add('hidden');
       modalCarrito.abrirModalCarrito();

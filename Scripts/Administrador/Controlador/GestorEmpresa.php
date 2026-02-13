@@ -62,6 +62,22 @@ class GestorEmpresa {
       case 'guardar-horarios':
         $this->guardarHorarios();
         break;
+
+      case 'guardar-dias-no-laborales':
+        $this->guardarDiasNoLaborales();
+        break;
+
+      case 'mostrar-dias-no-laborales':
+        $this->mostrarDiasNoLaborales();
+        break;
+
+      case 'mostrar-horarios':
+        $this->mostrarHorarios();
+        break;
+
+      case 'verificar-contrasena-mesero':
+        $this->verificarContrasenaMesero();
+        break;
       
       default:
         http_response_code(404);
@@ -142,11 +158,18 @@ class GestorEmpresa {
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
+    $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
 
     // 2️⃣ Validaciones
     if (empty($nombre)) {
       http_response_code(400);
       echo json_encode(['error' => 'Falta el nombre de la empresa.']);
+      return;
+    }
+
+    if (empty($contrasenaMesero)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta la contraseña de mesero.']);
       return;
     }
 
@@ -164,7 +187,7 @@ class GestorEmpresa {
       }
 
       // 4️⃣ Crear la empresa en la base de datos
-      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia);
+      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 5️⃣ Devolver respuesta
       http_response_code(200);
@@ -202,6 +225,7 @@ class GestorEmpresa {
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
+    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -211,7 +235,7 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia);
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -234,6 +258,7 @@ class GestorEmpresa {
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
+    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -243,7 +268,7 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -342,4 +367,95 @@ class GestorEmpresa {
   }
 
   
+
+  private function guardarDiasNoLaborales(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $dias_no_laborales = $datos['dias_no_laborales'] ?? null;
+
+    if (empty($id_empresa) || !is_array($dias_no_laborales)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para guardar los días no laborales.']);
+      return;
+    }
+
+    try {
+      $diasGuardados = $this->empresaRepositorio->guardarDiasNoLaborales($id_empresa, $dias_no_laborales);
+      http_response_code(200);
+      echo json_encode([
+        'message' => 'Días no laborales guardados correctamente.',
+        'dias_no_laborales' => $diasGuardados
+      ]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al guardar los días no laborales: ' . $e->getMessage()]);
+    }
+  }
+
+  private function mostrarDiasNoLaborales(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar días no laborales.']);
+      return;
+    }
+
+    try {
+      $diasNoLaborales = $this->empresaRepositorio->obtenerDiasNoLaborales($id_empresa);
+      http_response_code(200);
+      echo json_encode(['dias_no_laborales' => $diasNoLaborales]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mostrar los días no laborales: ' . $e->getMessage()]);
+    }
+  }
+
+
+  private function mostrarHorarios(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar horarios.']);
+      return;
+    }
+
+    try {
+      $data = $this->empresaRepositorio->obtenerHorariosYDiasNoLaborales($id_empresa);
+      http_response_code(200);
+      echo json_encode($data);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mostrar horarios: ' . $e->getMessage()]);
+    }
+  }
+
+  private function verificarContrasenaMesero(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $contrasena = (string)($datos['contrasena'] ?? '');
+
+    if (empty($id_empresa) || $contrasena === '') {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para validar contraseña de mesero.']);
+      return;
+    }
+
+    try {
+      $esValida = $this->empresaRepositorio->verificarContrasenaMesero($id_empresa, $contrasena);
+      http_response_code(200);
+      echo json_encode(['valida' => $esValida]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
+    }
+  }
+
 }

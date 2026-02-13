@@ -134,6 +134,10 @@ class EmpresaVista {
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" required>
         </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" required>
+        </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>
     `;
@@ -221,6 +225,67 @@ class EmpresaVista {
 
     return modalHorarios;
   }
+
+  modalConfigurarDiasNoLaborales() {
+    const modalDiasNoLaborales = document.createElement('div');
+    modalDiasNoLaborales.classList.add('wrapper');
+    modalDiasNoLaborales.id = 'modalConfigurarDiasNoLaborales';
+
+    const modalContenido = document.createElement('div');
+    modalContenido.classList.add('wrapper-content');
+
+    const htmlContent = `
+      <form id="formConfigurarDiasNoLaborales">
+        <header id="header-wrapper">
+          <h2 id="titulo-wrapper" class="titulo">Configuración de días no laborales</h2>
+          <button id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+        </header>
+
+        <div class="modulos">
+          <text id="titulo-modulos"> Agregar día individual </text>
+
+          <div class="form-group">
+            <label for="fechaNoLaboral">Fecha:</label>
+            <input type="date" id="fechaNoLaboral" name="fechaNoLaboral">
+          </div>
+
+          <button type="button" class="boton" id="agregarDiaNoLaboral">
+            + Agregar día
+          </button>
+
+          <text id="titulo-modulos"> Agregar rango de fechas </text>
+
+          <div class="form-group">
+            <label for="fechaNoLaboralInicio">Desde:</label>
+            <input type="date" id="fechaNoLaboralInicio" name="fechaNoLaboralInicio">
+          </div>
+
+          <div class="form-group">
+            <label for="fechaNoLaboralFin">Hasta:</label>
+            <input type="date" id="fechaNoLaboralFin" name="fechaNoLaboralFin">
+          </div>
+
+          <button type="button" class="boton" id="agregarRangoNoLaboral">
+            + Agregar rango
+          </button>
+        </div>
+
+        <h3 class="subtitulo-horarios">Días no laborales cargados</h3>
+        <div id="listaDiasNoLaborales" class="horarios-grid"></div>
+
+        <div class="boton-final-container">
+          <button type="submit" class="boton boton-final disabled" id="btnGuardarDiasNoLaborales">
+            Guardar
+          </button>
+        </div>
+      </form>
+    `;
+
+    modalContenido.innerHTML = htmlContent;
+    modalDiasNoLaborales.appendChild(modalContenido);
+
+    return modalDiasNoLaborales;
+  }
   
   
   
@@ -294,6 +359,10 @@ class EmpresaVista {
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
+        </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>
     `;
@@ -318,6 +387,7 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
+        <button type = "button" class = "submit-button" id = "configurar-dias-no-laborales" >Configurar días no laborales</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;
@@ -381,6 +451,10 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+        </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
         </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>

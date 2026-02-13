@@ -66,7 +66,7 @@ class GestorAdministrador {
       }
     }
     
-    async crearEmpresa(nombre, telefono, ubicacion, tienecarrito, moduloMesero, efectivo, tarjeta, transferencia, imagen) {
+    async crearEmpresa(nombre, telefono, ubicacion, tienecarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero, imagen) {
       try {
         const formData = new FormData();
         formData.append('nombre', nombre);
@@ -77,6 +77,7 @@ class GestorAdministrador {
         formData.append('efectivo', efectivo ? true : false);
         formData.append('tarjeta', tarjeta ? true : false);
         formData.append('transferencia', transferencia ? true : false);
+        formData.append('contrasenaMesero', contrasenaMesero || '');
         
         if (imagen) {
           formData.append('imagen', imagen);
@@ -159,7 +160,7 @@ class GestorAdministrador {
       }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia) {
+    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero) {
       const bodyData = {
         id: id,
         nombre: nombre,
@@ -169,7 +170,8 @@ class GestorAdministrador {
         moduloMesero: moduloMesero,
         efectivo: efectivo,
         tarjeta: tarjeta,
-        transferencia: transferencia
+        transferencia: transferencia,
+        contrasenaMesero: contrasenaMesero
       };
       
       try {

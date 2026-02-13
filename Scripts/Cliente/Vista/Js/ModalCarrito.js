@@ -1,10 +1,11 @@
 class ModalCarrito {
-  constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra, esMesero) {
+  constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra, esMesero, horarios) {
     this.carrito = carrito;
     this.empresa = empresa;
     this.onEliminarArticulo = onEliminarArticulo;
     this.onFinalizarCompra = onFinalizarCompra;
     this.esMesero = esMesero;
+    this.horarios = horarios || { horarios: [], noLab: [] };
     this.listaCentral = document.getElementById('lista-central');
     this.wrapper = null;
     this.datosPersonales = {
@@ -58,6 +59,7 @@ class ModalCarrito {
         </div>
 
         <div id="zona-total">
+          <p id="mensaje-fuera-horario" class="hidden"></p>
           <div id="total-carrito">
               Total: $<span id="monto-total-carrito">0.00</span>
           </div>
@@ -101,6 +103,113 @@ class ModalCarrito {
     document.body.appendChild(this.wrapper);
   }
 
+
+  diaIndexToNombre(diaIndex) {
+    const mapa = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    return mapa[diaIndex] || `Día ${diaIndex}`;
+  }
+
+  estaAbiertoAhora() {
+    const ahora = new Date();
+    const dd = String(ahora.getDate()).padStart(2, '0');
+    const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    const hoyDm = `${dd}/${mm}`;
+
+    if ((this.horarios.noLab || []).includes(hoyDm)) {
+      return false;
+    }
+
+    const jsDay = ahora.getDay(); // 0 domingo..6 sábado
+    const diaIndex = jsDay === 0 ? 6 : jsDay - 1; // 0 lunes..6 domingo
+
+    const registroDia = (this.horarios.horarios || []).find(h => Number(h.diaIndex) === diaIndex);
+    if (!registroDia || !Array.isArray(registroDia.rangos) || registroDia.rangos.length === 0) {
+      return false;
+    }
+
+    const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+
+    return registroDia.rangos.some(r => {
+      if (!r.apertura || !r.cierre) return false;
+      const [ha, ma] = r.apertura.split(':').map(Number);
+      const [hc, mc] = r.cierre.split(':').map(Number);
+      const apertura = ha * 60 + ma;
+      const cierre = hc * 60 + mc;
+
+      if (cierre > apertura) {
+        return minutosActuales >= apertura && minutosActuales < cierre;
+      }
+
+      return minutosActuales >= apertura || minutosActuales < cierre;
+    });
+  }
+
+  actualizarDisponibilidadPedido() {
+    const mensaje = this.wrapper?.querySelector('#mensaje-fuera-horario');
+    if (!mensaje) return;
+
+    const abierto = this.estaAbiertoAhora();
+
+    if (this.esMesero) {
+      this.botonEnviar.disabled = !abierto;
+      this.botonEnviar.classList.toggle('boton-deshabilitado-horario', !abierto);
+    } else {
+      this.botonSigPaso.disabled = !abierto;
+      this.botonSigPaso.classList.toggle('boton-deshabilitado-horario', !abierto);
+    }
+
+    if (abierto) {
+      mensaje.classList.add('hidden');
+      mensaje.innerHTML = '';
+      return;
+    }
+
+    mensaje.classList.remove('hidden');
+    mensaje.innerHTML = 'No se pueden realizar pedidos fuera de horario, <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
+
+    const btn = mensaje.querySelector('#btn-consultar-horarios');
+    btn?.addEventListener('click', () => this.mostrarModalHorarios());
+  }
+
+  mostrarModalHorarios() {
+    const viejo = document.getElementById('modal-horarios-cafeteria');
+    if (viejo) viejo.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-horarios-cafeteria';
+    modal.className = 'modal-horarios-cafeteria';
+
+    const items = (this.horarios.horarios || [])
+      .slice()
+      .sort((a, b) => Number(a.diaIndex) - Number(b.diaIndex))
+      .map(dia => {
+        const rangos = (dia.rangos || [])
+          .map(r => `${r.apertura} - ${r.cierre}`)
+          .join(' | ');
+        return `<li><strong>${this.diaIndexToNombre(Number(dia.diaIndex))}:</strong> ${rangos || 'Cerrado'}</li>`;
+      })
+      .join('');
+
+    const noLab = (this.horarios.noLab || []).join(', ') || 'Sin días no laborales configurados';
+
+    modal.innerHTML = `
+      <div class="modal-horarios-contenido">
+        <h3>Horarios de la cafetería</h3>
+        <ul>${items || '<li>No hay horarios configurados</li>'}</ul>
+        <p><strong>Días no laborales:</strong> ${noLab}</p>
+        <button type="button" class="boton" id="cerrar-modal-horarios-cafeteria">Cerrar</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    modal.querySelector('#cerrar-modal-horarios-cafeteria')?.addEventListener('click', () => modal.remove());
+  }
+
   renderCarrito() {
     const cuerpo = document.getElementById("cuerpo-tabla-carrito");
     const totalSpan = document.querySelector("#monto-total-carrito");
@@ -117,7 +226,12 @@ class ModalCarrito {
           El carrito está vacío.
         </div>
       `;
-      this.botonEnviar.classList.add("desactivado");
+      this.botonEnviar.classList.remove("boton-deshabilitado-horario");
+      this.botonEnviar.disabled = true;
+      this.botonSigPaso?.classList.remove("boton-deshabilitado-horario");
+      this.botonSigPaso && (this.botonSigPaso.disabled = true);
+      const msg = this.wrapper?.querySelector("#mensaje-fuera-horario");
+      if (msg) { msg.classList.add("hidden"); msg.innerHTML = ""; }
       totalSpan.textContent = this.carrito.obtenerTotal() || "0.00";
       return;
     }
@@ -132,6 +246,8 @@ class ModalCarrito {
       this.botonSigPaso.removeEventListener("click", () => this.renderDatosPersonales());
       this.botonSigPaso.addEventListener("click", () => this.renderDatosPersonales());
     }
+
+    this.actualizarDisponibilidadPedido();
 
     articulos.forEach(articulo => {
 

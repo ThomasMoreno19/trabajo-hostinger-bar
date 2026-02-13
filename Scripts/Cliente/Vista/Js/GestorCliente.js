@@ -72,4 +72,40 @@ class GestorCliente {
             id_empresa
         );
     }
+
+
+    async obtenerHorarios(id_empresa) {
+        const bodyData = { id_empresa: parseInt(id_empresa) };
+
+        const response = await fetch(`/empresa/mostrar-horarios`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error al obtener horarios' }));
+            throw new Error(err.error || 'Error al obtener horarios');
+        }
+
+        return await response.json();
+    }
+
+    async verificarContrasenaMesero(id_empresa, contrasena) {
+        const bodyData = { id_empresa: parseInt(id_empresa), contrasena };
+
+        const response = await fetch(`/empresa/verificar-contrasena-mesero`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error al verificar contraseña de mesero' }));
+            throw new Error(err.error || 'Error al verificar contraseña de mesero');
+        }
+
+        return await response.json();
+    }
+
 }
