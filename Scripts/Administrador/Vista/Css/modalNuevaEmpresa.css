@@ -70,6 +70,7 @@ h3{
 }
 
 #titulo-modulos {
+  display: flex;
   margin-bottom: 8px;
   font-weight: bold;
   color: white;

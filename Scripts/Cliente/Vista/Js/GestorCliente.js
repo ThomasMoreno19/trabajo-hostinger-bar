@@ -72,4 +72,21 @@ class GestorCliente {
             id_empresa
         );
     }
+
+    async obtenerHorarios(id_empresa) {
+        const bodyData = { id_empresa };
+
+        const response = await fetch(`/empresa/mostrar-horarios`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(bodyData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error obteniendo horarios' }));
+            throw new Error(err.error || 'Error obteniendo horarios');
+        }
+
+        return await response.json();
+    }
 }

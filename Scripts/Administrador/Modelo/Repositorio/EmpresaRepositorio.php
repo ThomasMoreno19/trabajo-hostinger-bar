@@ -265,18 +265,26 @@ class EmpresaRepositorio {
       throw $e;
     }
   }
-
-
+  
   public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array {
     try {
       $this->pdo->beginTransaction();
 
+      $anioActual = date('Y');
+
+      // BORRAR SOLO LOS DEL AÑO ACTUAL
       $stmtDelete = $this->pdo->prepare(
-        "DELETE FROM dias_no_laborales_empresa WHERE id_empresa = :id_empresa"
+        "DELETE FROM dias_no_laborales_empresa
+        WHERE id_empresa = :id_empresa
+        AND dia_mes LIKE :anio"
       );
+
+      $like = "%/$anioActual";
       $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtDelete->bindParam(':anio', $like, PDO::PARAM_STR);
       $stmtDelete->execute();
 
+      // INSERT
       $stmtInsert = $this->pdo->prepare(
         "INSERT INTO dias_no_laborales_empresa (id_empresa, dia_mes)
         VALUES (:id_empresa, :dia_mes)"
@@ -285,24 +293,42 @@ class EmpresaRepositorio {
       $diasLimpios = [];
 
       foreach ($dias_no_laborales as $dia_mes) {
+
+        // Valida DD/MM
         if (!is_string($dia_mes) || !preg_match('/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/', $dia_mes)) {
           throw new Exception("Formato inválido de día no laboral: $dia_mes");
         }
 
-        $diasLimpios[$dia_mes] = true;
+        // Armamos DD/MM/YYYY
+        $diaCompleto = $dia_mes . "/" . $anioActual;
+
+        // Evitar duplicados
+        $diasLimpios[$diaCompleto] = true;
       }
 
+      // Ordenar por mes/día
       $diasOrdenados = array_keys($diasLimpios);
-      sort($diasOrdenados);
+      usort($diasOrdenados, function($a, $b) {
+        // a = DD/MM/YYYY
+        [$da, $ma] = explode('/', $a);
+        [$db, $mb] = explode('/', $b);
 
-      foreach ($diasOrdenados as $dia_mes) {
+        if ((int)$ma !== (int)$mb) return (int)$ma - (int)$mb;
+        return (int)$da - (int)$db;
+      });
+
+      foreach ($diasOrdenados as $diaCompleto) {
         $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-        $stmtInsert->bindParam(':dia_mes', $dia_mes, PDO::PARAM_STR);
+        $stmtInsert->bindParam(':dia_mes', $diaCompleto, PDO::PARAM_STR);
         $stmtInsert->execute();
       }
 
       $this->pdo->commit();
-      return $diasOrdenados;
+
+      // DEVOLVER al front como DD/MM (sin año)
+      return array_map(function($x) {
+        return substr($x, 0, 5); // "DD/MM"
+      }, $diasOrdenados);
 
     } catch (Exception $e) {
       if ($this->pdo->inTransaction()) {
@@ -313,21 +339,75 @@ class EmpresaRepositorio {
     }
   }
 
-  public function obtenerDiasNoLaborales(int $id_empresa): array {
-    try {
-      $stmt = $this->pdo->prepare(
-        "SELECT dia_mes FROM dias_no_laborales_empresa WHERE id_empresa = :id_empresa ORDER BY dia_mes ASC"
-      );
-      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-      $stmt->execute();
 
-      return $stmt->fetchAll(PDO::FETCH_COLUMN);
+  public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array {
+    try {
+
+      // 1) HORARIOS
+      $stmtHorarios = $this->pdo->prepare("
+        SELECT
+          h.dia_semana,
+          DATE_FORMAT(h.hora_apertura, '%H:%i') AS apertura,
+          DATE_FORMAT(h.hora_cierre, '%H:%i') AS cierre
+        FROM horarios_empresa h
+        WHERE h.id_empresa = :id_empresa
+        ORDER BY h.dia_semana ASC, h.hora_apertura ASC
+      ");
+
+      $stmtHorarios->execute([
+        ':id_empresa' => $id_empresa
+      ]);
+
+      $rowsHorarios = $stmtHorarios->fetchAll(PDO::FETCH_ASSOC);
+
+      // 2) NO LABORALES (año actual)
+      $stmtNoLab = $this->pdo->prepare("
+        SELECT
+          SUBSTRING(d.dia_mes, 1, 5) AS dia_mes
+        FROM dias_no_laborales_empresa d
+        WHERE d.id_empresa = :id_empresa
+          AND SUBSTRING(d.dia_mes, 7, 4) = YEAR(CURDATE())
+        ORDER BY d.dia_mes ASC
+      ");
+
+      $stmtNoLab->execute([
+        ':id_empresa' => $id_empresa
+      ]);
+
+      $rowsNoLab = $stmtNoLab->fetchAll(PDO::FETCH_COLUMN);
+
+      // Armamos horarios como el formato del front
+      $horariosMap = [];
+
+      foreach ($rowsHorarios as $row) {
+        $diaIndex = (int)$row["dia_semana"];
+
+        if (!isset($horariosMap[$diaIndex])) {
+          $horariosMap[$diaIndex] = [
+            "diaIndex" => $diaIndex,
+            "rangos" => []
+          ];
+        }
+
+        $horariosMap[$diaIndex]["rangos"][] = [
+          "apertura" => $row["apertura"],
+          "cierre" => $row["cierre"]
+        ];
+      }
+
+      return [
+        "horarios" => array_values($horariosMap),
+        "noLab" => $rowsNoLab
+      ];
 
     } catch (PDOException $e) {
-      error_log("Error al obtener días no laborales (empresa $id_empresa): " . $e->getMessage());
+      error_log("Error al obtener horarios y días no laborales (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
+
+
+
 
 
   

@@ -207,6 +207,10 @@ class EmpresaVista {
 
         <!-- BOTÓN FINAL -->
         <div class="boton-final-container">
+          <button type="button" class="botonCambiarForm" id="btnFormDiasNoLaborales">
+            Configurar días no laborales
+          </button>
+
           <button type="button" class="boton boton-final disabled" id="btnGuardarHorarios">
             Guardar
           </button>
@@ -238,7 +242,7 @@ class EmpresaVista {
         </header>
 
         <div class="modulos">
-          <text id="titulo-modulos"> Agregar día individual </text>
+          <text id="titulo-modulos-dia"> Agregar día individual </text>
 
           <div class="form-group">
             <label for="fechaNoLaboral">Fecha:</label>
@@ -249,7 +253,7 @@ class EmpresaVista {
             + Agregar día
           </button>
 
-          <text id="titulo-modulos"> Agregar rango de fechas </text>
+          <text id="titulo-modulos-rango"> Agregar rango de fechas </text>
 
           <div class="form-group">
             <label for="fechaNoLaboralInicio">Desde:</label>
@@ -266,10 +270,13 @@ class EmpresaVista {
           </button>
         </div>
 
-        <h3 class="subtitulo-horarios">Días no laborales cargados</h3>
+        <h3 class="subtitulo-horarios">Días no laborales registrados</h3>
         <div id="listaDiasNoLaborales" class="horarios-grid"></div>
 
         <div class="boton-final-container">
+          <button type="button" class="botonCambiarForm" id="btnFormConfigurarHorarios">
+            Configurar horarios
+          </button>
           <button type="submit" class="boton boton-final disabled" id="btnGuardarDiasNoLaborales">
             Guardar
           </button>
@@ -379,7 +386,6 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
-        <button type = "button" class = "submit-button" id = "configurar-dias-no-laborales" >Configurar días no laborales</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;

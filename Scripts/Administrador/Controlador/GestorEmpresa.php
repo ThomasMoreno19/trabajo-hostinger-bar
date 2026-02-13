@@ -67,8 +67,8 @@ class GestorEmpresa {
         $this->guardarDiasNoLaborales();
         break;
 
-      case 'mostrar-dias-no-laborales':
-        $this->mostrarDiasNoLaborales();
+      case 'mostrar-horarios':
+        $this->mostrarHorarios();
         break;
       
       default:
@@ -376,24 +376,24 @@ class GestorEmpresa {
     }
   }
 
-  private function mostrarDiasNoLaborales(): void {
+  private function mostrarHorarios(): void {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($datos['id_empresa'] ?? 0);
 
     if (empty($id_empresa)) {
       http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para mostrar días no laborales.']);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar el horario de la empresa.']);
       return;
     }
 
     try {
-      $diasNoLaborales = $this->empresaRepositorio->obtenerDiasNoLaborales($id_empresa);
+      $diasNoLaborales = $this->empresaRepositorio->obtenerHorariosYDiasNoLaborales($id_empresa);
       http_response_code(200);
-      echo json_encode(['dias_no_laborales' => $diasNoLaborales]);
+      echo json_encode($diasNoLaborales);
     } catch (Exception $e) {
       http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los días no laborales: ' . $e->getMessage()]);
+      echo json_encode(['error' => 'Error al mostrar el horario: ' . $e->getMessage()]);
     }
   }
 

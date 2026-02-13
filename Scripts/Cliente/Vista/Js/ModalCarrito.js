@@ -1,5 +1,5 @@
 class ModalCarrito {
-  constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra, esMesero) {
+  constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra, esMesero, horarios) {
     this.carrito = carrito;
     this.empresa = empresa;
     this.onEliminarArticulo = onEliminarArticulo;
@@ -16,17 +16,18 @@ class ModalCarrito {
       referencia: "",
       numeroMesa: null
     };
+    this.horarios = horarios || [];
   }
 
   abrirModalCarrito() {
     this.crearModal();        // crea el HTML del modal en el DOM
-    this.botonSigPaso = this.wrapper.querySelector("#boton-siguiente-paso");
     this.botonEnviar = this.wrapper.querySelector("#boton-finalizar-compra");
     this.renderCarrito();     // dibuja las filas en base al carrito actual
     this.inicializarEventos(); // agrega delegación de eventos sobre elementos ya presentes
   }
 
   crearModal() {
+    this.validarHorarios();
     // Elimino modal previo si existe (evita duplicados)
     this.wrapper = document.getElementById("modal-carrito-wrapper");
     if (this.wrapper) this.wrapper.remove();
@@ -97,6 +98,11 @@ class ModalCarrito {
       </div>
     </div>
     `;
+    
+    this.botonSigPaso = this.wrapper.querySelector("#boton-siguiente-paso");
+    const desactivado = this.validarHorarios()
+    ? this.botonSigPaso.classList.remove("desactivado")
+    : this.botonSigPaso.classList.add("desactivado");
 
     document.body.appendChild(this.wrapper);
   }
@@ -125,12 +131,18 @@ class ModalCarrito {
       this.botonEnviar.classList.remove("hidden");
       this.botonSigPaso.classList.add("hidden");
       this.botonEnviar.removeEventListener("click", () => this.pedirMesa());
-      this.botonEnviar.addEventListener("click", () => this.pedirMesa());
+      this.botonSigPaso.classList.contains("desactivado")?
+        this.botonSigPaso.removeEventListener("click", () => this.pedirMesa()):
+        this.botonSigPaso.addEventListener("click", () => this.pedirMesa());
     }else{
       this.botonEnviar.classList.add("hidden");
       this.botonSigPaso.classList.remove("hidden");
       this.botonSigPaso.removeEventListener("click", () => this.renderDatosPersonales());
-      this.botonSigPaso.addEventListener("click", () => this.renderDatosPersonales());
+
+      this.botonSigPaso.classList.contains("desactivado")?
+        this.botonSigPaso.removeEventListener("click", () => this.renderDatosPersonales()):
+        this.botonSigPaso.addEventListener("click", () => this.renderDatosPersonales());
+      this.botonSigPaso.removeEventListener("click", () => this.pedirMesa());
     }
 
     articulos.forEach(articulo => {
@@ -689,6 +701,43 @@ class ModalCarrito {
         DOMDireccion.classList.remove("hidden");
         DOMEspecificaciones.classList.remove("hidden");
       }
+    });
+  }
+
+  validarHorarios() {
+    const ahora = new Date();
+    const diaSemana = ahora.getDay(); // 0 (Domingo) a 6 (Sábado)
+    const horaActual = ahora.getHours() + ahora.getMinutes() / 60; // Hora en formato decimal
+    console.log("Hora actual:", this.horarios);
+    const horarioHoy = this.horarios.horarios.find(h => h.dia === diaSemana);
+    if (!horarioHoy) {
+      return false; // Si no hay horario para hoy, se asume que está cerrado
+    }
+
+    if (horaActual < horarioHoy.horaApertura || horaActual > horarioHoy.horaCierre) {
+      return false; // Fuera del horario de atención
+    }
+  }
+
+  mostrarHorarios(){
+    const wrapper = document.createElement("div");
+    wrapper.id = "modal-horarios-wrapper";
+    wrapper.innerHTML = `
+      <div class="modal-horarios">
+        <h2>Horarios de atención</h2>
+        <ul>
+          ${this.horarios.map(h => {
+            const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            return `<li>${dias[h.dia]}: ${Math.floor(h.horaApertura)}:${(h.horaApertura % 1) * 60 === 0 ? '00' : '30'} - ${Math.floor(h.horaCierre)}:${(h.horaCierre % 1) * 60 === 0 ? '00' : '30'}</li>`;
+          }).join("")}
+        </ul>
+        <button id="cerrar-horarios" class="boton-cerrar">&times;</button>
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+    document.getElementById("cerrar-horarios").addEventListener("click", () => {
+      wrapper.remove();
     });
   }
 }

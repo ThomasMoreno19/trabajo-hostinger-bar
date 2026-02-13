@@ -248,14 +248,12 @@
     margin-top: 15px;
 }
 
-.desactivado {
-    background-color: #555 !important;
-    cursor: not-allowed !important;
-    display: none !important;
-}
-
 @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}
 }
 
+.desactivado {
+    background-color: #555 !important;
+    cursor: not-allowed !important;
+}
