@@ -136,10 +136,11 @@ class PantallaAdministrador {
       const TRANSFERENCIA = FORMDATA.get('transferencia') === 'true';
       const USUARIO = FORMDATA.get('usuario');
       const CONTRASENA = FORMDATA.get('contrasena');
+      const CONTRASENA_MESERO = FORMDATA.get('contrasenaMesero');
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
-        const EMPRESA = await this.gestor.crearEmpresa(NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, IMAGEN);
+        const EMPRESA = await this.gestor.crearEmpresa(NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
         await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
         MODAL.classList.add('hidden');
         document.body.removeChild(MODAL);
@@ -205,11 +206,12 @@ class PantallaAdministrador {
       const TRANSFERENCIA = FORMDATA.get('transferencia') === 'true';
       const USUARIO = FORMDATA.get('usuario');
       const CONTRASENA = FORMDATA.get('contrasena');
+      const CONTRASENA_MESERO = FORMDATA.get('contrasenaMesero');
     
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
         await this.gestor.modificarModerador(MODERADOR.id, USUARIO, CONTRASENA);
-        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA);
+        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO);
         MODAL.classList.add('hidden');
         document.body.removeChild(MODAL);
         await this.mostrarLista();

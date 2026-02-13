@@ -482,7 +482,7 @@ class GestorModerador {
         }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia) {
+    async modificarEmpresa(id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia, contrasenaMesero) {
         const bodyData = {
             id: id,
             nombre: nombre,
@@ -490,7 +490,8 @@ class GestorModerador {
             ubicacion: ubicacion,
             efectivo: efectivo,
             tarjeta: tarjeta,
-            transferencia: transferencia
+            transferencia: transferencia,
+            contrasenaMesero: contrasenaMesero
         };
         
         try {

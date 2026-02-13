@@ -150,11 +150,18 @@ class GestorEmpresa {
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
+    $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
 
     // 2️⃣ Validaciones
     if (empty($nombre)) {
       http_response_code(400);
       echo json_encode(['error' => 'Falta el nombre de la empresa.']);
+      return;
+    }
+
+    if (empty($contrasenaMesero)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta la contraseña de mesero.']);
       return;
     }
 
@@ -172,7 +179,7 @@ class GestorEmpresa {
       }
 
       // 4️⃣ Crear la empresa en la base de datos
-      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia);
+      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 5️⃣ Devolver respuesta
       http_response_code(200);
@@ -210,6 +217,7 @@ class GestorEmpresa {
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
+    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -219,7 +227,7 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia);
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -242,6 +250,7 @@ class GestorEmpresa {
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
+    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -251,7 +260,7 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

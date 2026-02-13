@@ -134,6 +134,10 @@ class EmpresaVista {
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" required>
         </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" required>
+        </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>
     `;
@@ -362,6 +366,10 @@ class EmpresaVista {
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
+        </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>
     `;
@@ -386,6 +394,7 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
+        <button type = "button" class = "submit-button" id = "configurar-dias-no-laborales" >Configurar días no laborales</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;
@@ -449,6 +458,10 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contrasena:</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+        </div>
+        <div class="form-group">
+          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
         </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>

@@ -397,11 +397,12 @@ class PantallaModerador {
         const transferencia = formData.get('transferencia') === 'true';
         const usuario = formData.get('usuario');
         const contrasena = formData.get('contrasena');
+        const contrasenaMesero = formData.get('contrasenaMesero');
         
         try {
           // Llamamos al método del gestor con el nombre y el archivo.
           await this.gestor.modificarModerador(moderador.id, usuario, contrasena);
-          await this.gestor.modificarEmpresa(this.empresa.id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia);
+          await this.gestor.modificarEmpresa(this.empresa.id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia, contrasenaMesero);
           this.empresa.update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia);
           modal.classList.add('hidden');
           document.body.removeChild(modal);
@@ -454,6 +455,12 @@ class PantallaModerador {
     botonConfigurarHorarios.addEventListener('click', async (event) => {
       event.preventDefault();
       await this.abrirModalConfigurarHorarios(modal);
+      document.body.removeChild(modal);
+    });
+
+    botonConfigurarDiasNoLaborales.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarDiasNoLaborales(modal);
       document.body.removeChild(modal);
     });
   }
