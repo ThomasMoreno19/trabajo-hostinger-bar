@@ -29,6 +29,34 @@ class PantallaModerador {
   async init() {
     const data = await this.gestor.conocerEmpresa(this.obtenerIdEmpresa());
     this.empresa = new EmpresaVista(data);
+
+    try {
+      const respuesta = await this.gestor.obtenerHorarios(this.empresa.id);
+
+      this.diasNoLaboralesGuardados = Array.isArray(respuesta.noLab)
+        ? [...new Set(respuesta.noLab)]
+        : [];
+
+      // Horarios: agregamos dia y nombre por cada día
+      this.horariosGuardados = Array.isArray(respuesta.horarios)
+        ? respuesta.horarios.map((h) => {
+            const diaIndex = Number(h.diaIndex);
+
+            return {
+              ...h,
+              dia: DIAS_SEMANA[diaIndex] || '',
+              nombre: NOMBRE_DIAS[diaIndex] || '',
+              rangos: Array.isArray(h.rangos) ? h.rangos : []
+            };
+          })
+        : [];
+
+    } catch (error) {
+      this.horariosGuardados = [];
+      this.diasNoLaboralesGuardados = [];
+      console.warn('No se pudieron cargar los horarios o días no laborales previos.', error);
+    }
+
     await this.asignarTituloPagina('Gestión de');
   }
   
@@ -144,7 +172,7 @@ class PantallaModerador {
         }
       } else {
         // Lógica para mostrar solo los rubros (moderadores)
-        const rubrosRecibidos = await this.gestor.mostrarListaRubros(this.empresa.id, this.empresa.id);
+        const rubrosRecibidos = await this.gestor.mostrarListaRubros(this.empresa.id);
         if (rubrosRecibidos.length === 0) {
           lista.innerHTML = `<p class="texto-vacio"> No se encontraron rubros. </p>`;
         } else {
@@ -442,6 +470,14 @@ class PantallaModerador {
     this.listaCentral.classList.add('hidden');
 
     document.body.appendChild(modal);
+    this.renderHorariosEnModal(modal);
+
+    const botonFormDiasNoLaborales = document.getElementById('btnFormDiasNoLaborales');
+    botonFormDiasNoLaborales.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarDiasNoLaborales(modal);
+      document.body.removeChild(modal);
+    });
 
     const botonCerrar = document.getElementById('cerrar-wrapper');
 
@@ -594,7 +630,6 @@ class PantallaModerador {
       }
     });
 
-
   }
   
   async abrirModalConfigurarDiasNoLaborales() {
@@ -603,15 +638,22 @@ class PantallaModerador {
 
     document.body.appendChild(modal);
 
+    const botonFormHorarios = modal.querySelector('#btnFormConfigurarHorarios');
+    botonFormHorarios.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarHorarios(modal);
+      document.body.removeChild(modal);
+    });
+
     const botonCerrar = modal.querySelector('#cerrar-wrapper');
     const botonAgregarDia = modal.querySelector('#agregarDiaNoLaboral');
     const botonAgregarRango = modal.querySelector('#agregarRangoNoLaboral');
     const form = modal.querySelector('#formConfigurarDiasNoLaborales');
 
     try {
-      const respuesta = await this.gestor.obtenerDiasNoLaborales(this.empresa.id);
-      this.diasNoLaboralesGuardados = Array.isArray(respuesta.dias_no_laborales)
-        ? [...new Set(respuesta.dias_no_laborales)]
+      const respuesta = await this.gestor.obtenerHorarios(this.empresa.id);
+      this.diasNoLaboralesGuardados = Array.isArray(respuesta.noLab)
+        ? [...new Set(respuesta.noLab)]
         : [];
     } catch (error) {
       this.diasNoLaboralesGuardados = [];
@@ -880,10 +922,10 @@ class PantallaModerador {
 
     contenedor.innerHTML = "";
 
-    // 🔥 botón guardar
     const btnGuardar = modal.querySelector("#btnGuardarHorarios");
 
-    if (!this.horariosGuardados || this.horariosGuardados.length === 0) {
+    // Si no hay horarios
+    if (!Array.isArray(this.horariosGuardados) || this.horariosGuardados.length === 0) {
       contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
         Todavía no cargaste horarios.
       </p>`;
@@ -894,23 +936,27 @@ class PantallaModerador {
 
     if (btnGuardar) btnGuardar.disabled = false;
 
+    // Ordenar por día
     const ordenados = [...this.horariosGuardados].sort(
-      (a, b) => a.diaIndex - b.diaIndex
+      (a, b) => Number(a.diaIndex) - Number(b.diaIndex)
     );
 
     for (const dia of ordenados) {
       const card = document.createElement("div");
       card.classList.add("horario-card");
 
-      const rangosOrdenados = [...dia.rangos].sort((a, b) =>
-        a.apertura.localeCompare(b.apertura)
+      // 👇 por si rangos viene null o undefined
+      const rangos = Array.isArray(dia.rangos) ? dia.rangos : [];
+
+      const rangosOrdenados = [...rangos].sort((a, b) =>
+        (a.apertura || "").localeCompare(b.apertura || "")
       );
 
       const rangosHTML = rangosOrdenados
         .map(
           (r) => `
             <div class="horario-linea">Apertura: ${r.apertura}</div>
-            <div class="horario-linea">Cierre: ${r.cierre}</div>
+            <div class="horario-linea cierre">Cierre: ${r.cierre}</div>
           `
         )
         .join("");
@@ -920,26 +966,27 @@ class PantallaModerador {
           ✖
         </button>
 
-        <div class="horario-dia">${dia.nombre}</div>
+        <div class="horario-dia">${dia.nombre || dia.dia || `Día ${dia.diaIndex}`}</div>
         ${rangosHTML}
       `;
 
       contenedor.appendChild(card);
     }
 
-    // ✅ Listener eliminar (delegación)
+    // Listener eliminar
     contenedor.querySelectorAll(".btn-eliminar-horario").forEach((btn) => {
       btn.addEventListener("click", () => {
         const diaIndex = Number(btn.dataset.diaindex);
 
         this.horariosGuardados = this.horariosGuardados.filter(
-          (h) => h.diaIndex !== diaIndex
+          (h) => Number(h.diaIndex) !== diaIndex
         );
 
         this.renderHorariosEnModal(modal);
       });
     });
   }
+
 
 
 

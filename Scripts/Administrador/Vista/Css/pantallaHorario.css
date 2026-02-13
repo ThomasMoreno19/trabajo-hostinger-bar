@@ -54,12 +54,12 @@ h2{
     background-color: #e89e13;
     border: none;
     color: white;
-    padding: 11px 18px;
+    padding: 10px 16px;
     border-radius: 10px;
     cursor: pointer;
     margin-top: 15px;
     width: fit-content;
-    font-size: 19px;
+    font-size: 16px;
     font-weight: bold;
     position: relative;
     left: 50%;
@@ -114,11 +114,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
-  padding: 14px;
+  padding: 35px 20px 20px 20px;
   width: fit-content;
 }
 
 .horario-dia{
+  text-align: center;
   margin-bottom: 5px;
   font-size: 20px;
 }
@@ -126,6 +127,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .horario-linea{
   color: rgb(169 169 169);
   font-size: 15px;
+  text-align: center;
 }
 
 #horario-cierre{
@@ -172,6 +174,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: not-allowed;
 }
 
+.cierre{
+  margin-bottom: 8px;
+}
+
 .lista-horarios {
   padding: 0px 10px;
 }
@@ -180,11 +186,43 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(255, 60, 60, 0.9);
+  background: rgb(208 28 28 / 90%);
   border: none;
   color: white;
   font-weight: bold;
   border-radius: 10px;
-  padding: 5px 9px;
+  padding: 4px 8px;
   cursor: pointer;
+}
+
+.botonCambiarForm{
+  background-color: transparent;
+  color: #e89e13;
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+  margin-top: 15px;
+  width: fit-content;
+  font-size: 13px;
+  font-weight: bold;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+#titulo-modulos-rango{
+  margin-bottom: 18px;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  display: flex;
+}
+
+#titulo-modulos-dia{
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  display: flex;
 }

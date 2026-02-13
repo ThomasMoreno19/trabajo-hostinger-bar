@@ -21,6 +21,7 @@ class PantallaCliente {
       this.loader = document.getElementById('loader');
       this.botonCarrito = document.getElementById('boton-carrito');
       this.cantidadArticulosCarrito = document.getElementById('cantidad-articulos-carrito');
+      this.horarios = [];
 
       this.listaCentral = document.getElementById('lista-central');
 
@@ -65,6 +66,8 @@ class PantallaCliente {
       }
 
       const textoAdicional = '- Carta';
+      this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
+
       await this.mostrarLogoEmpresa();
       await this.empresa.asignarIconoYPagina(textoAdicional);
     }

@@ -564,7 +564,7 @@ class GestorModerador {
         return texto.replace(/[\r\n]+/g, ', ').trim();
     }
 
-    guardarHorarios(horarios, id_empresa) {
+    async guardarHorarios(horarios, id_empresa) {
 
         const bodyData = {
             id_empresa: id_empresa,
@@ -576,13 +576,17 @@ class GestorModerador {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(bodyData),
         });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Error guardando horarios' }));
+            throw new Error(err.error || 'Error guardando horarios');
+        }
+
+        return await response.json();
     }
-    
-    
-    
-    
 
     async guardarDiasNoLaborales(dias_no_laborales, id_empresa) {
+
         const bodyData = {
             id_empresa,
             dias_no_laborales
@@ -602,18 +606,18 @@ class GestorModerador {
         return await response.json();
     }
 
-    async obtenerDiasNoLaborales(id_empresa) {
+    async obtenerHorarios(id_empresa) {
         const bodyData = { id_empresa };
 
-        const response = await fetch(`/empresa/mostrar-dias-no-laborales`, {
+        const response = await fetch(`/empresa/mostrar-horarios`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(bodyData),
         });
 
         if (!response.ok) {
-            const err = await response.json().catch(() => ({ error: 'Error obteniendo días no laborales' }));
-            throw new Error(err.error || 'Error obteniendo días no laborales');
+            const err = await response.json().catch(() => ({ error: 'Error obteniendo horarios' }));
+            throw new Error(err.error || 'Error obteniendo horarios');
         }
 
         return await response.json();
@@ -636,10 +640,7 @@ class GestorModerador {
                 this.loginAdministrador(nombre, contrasena);
             }
             
-            // El backend debe devolver un booleano (true si es exitoso, false si no)
-            const resultado = await response.json();
-            
-            return resultado; // Esto debería ser 'true' o 'false'
+            return await response.json(); // Esto debería ser 'true' o 'false'
             
         } catch (error) {
             console.error('Error en loginModerador:', error);

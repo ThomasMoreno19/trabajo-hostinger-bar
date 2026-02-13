@@ -67,16 +67,8 @@ class GestorEmpresa {
         $this->guardarDiasNoLaborales();
         break;
 
-      case 'mostrar-dias-no-laborales':
-        $this->mostrarDiasNoLaborales();
-        break;
-
       case 'mostrar-horarios':
         $this->mostrarHorarios();
-        break;
-
-      case 'verificar-contrasena-mesero':
-        $this->verificarContrasenaMesero();
         break;
       
       default:
@@ -393,28 +385,6 @@ class GestorEmpresa {
     }
   }
 
-  private function mostrarDiasNoLaborales(): void {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para mostrar días no laborales.']);
-      return;
-    }
-
-    try {
-      $diasNoLaborales = $this->empresaRepositorio->obtenerDiasNoLaborales($id_empresa);
-      http_response_code(200);
-      echo json_encode(['dias_no_laborales' => $diasNoLaborales]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los días no laborales: ' . $e->getMessage()]);
-    }
-  }
-
-
   private function mostrarHorarios(): void {
     $datos = json_decode(file_get_contents('php://input'), true);
 
@@ -422,39 +392,17 @@ class GestorEmpresa {
 
     if (empty($id_empresa)) {
       http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para mostrar horarios.']);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar el horario de la empresa.']);
       return;
     }
 
     try {
-      $data = $this->empresaRepositorio->obtenerHorariosYDiasNoLaborales($id_empresa);
+      $diasNoLaborales = $this->empresaRepositorio->obtenerHorariosYDiasNoLaborales($id_empresa);
       http_response_code(200);
-      echo json_encode($data);
+      echo json_encode($diasNoLaborales);
     } catch (Exception $e) {
       http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar horarios: ' . $e->getMessage()]);
-    }
-  }
-
-  private function verificarContrasenaMesero(): void {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $contrasena = (string)($datos['contrasena'] ?? '');
-
-    if (empty($id_empresa) || $contrasena === '') {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para validar contraseña de mesero.']);
-      return;
-    }
-
-    try {
-      $esValida = $this->empresaRepositorio->verificarContrasenaMesero($id_empresa, $contrasena);
-      http_response_code(200);
-      echo json_encode(['valida' => $esValida]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
+      echo json_encode(['error' => 'Error al mostrar el horario: ' . $e->getMessage()]);
     }
   }
 
