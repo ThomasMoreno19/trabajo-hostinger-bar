@@ -265,7 +265,7 @@ class PantallaCliente {
         if (!nombre.includes(textoBusqueda)) return;
 
         const clon = articulo.cloneNode(true);
-        clon.onClick =() => {
+        clon.addEventListener('click', () => {
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -282,7 +282,7 @@ class PantallaCliente {
           }
           this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
           this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
-        };
+        });
         
         listaPlana.appendChild(clon);
       });
@@ -357,7 +357,7 @@ class PantallaCliente {
 
       articulosFiltrados.forEach(a => {
         const clon = a.cloneNode(true);
-        clon.onClick = () => {
+        clon.addEventListener('click', () => {
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -373,7 +373,7 @@ class PantallaCliente {
           }
           this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
           this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
-        };
+        });
         listaPlana.appendChild(clon);
       });
 
