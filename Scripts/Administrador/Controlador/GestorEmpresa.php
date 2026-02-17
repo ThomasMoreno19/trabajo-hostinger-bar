@@ -70,6 +70,10 @@ class GestorEmpresa {
       case 'mostrar-horarios':
         $this->mostrarHorarios();
         break;
+
+      case 'verificar-contrasena-mesero':
+      $this->verificarContrasenaMesero();
+      break;
       
       default:
         http_response_code(404);
@@ -351,7 +355,7 @@ class GestorEmpresa {
     try {
       $this->empresaRepositorio->guardarHorarios($id_empresa, $horarios);
       http_response_code(200);
-      echo json_encode(['message' => 'Horarios guardados correctamente.']);
+      echo json_encode(true);
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al guardar los horarios: ' . $e->getMessage()]);
@@ -403,6 +407,28 @@ class GestorEmpresa {
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al mostrar el horario: ' . $e->getMessage()]);
+    }
+  }
+
+  private function verificarContrasenaMesero(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $contrasena = (string)($datos['contrasena'] ?? '');
+
+    if (empty($id_empresa) || $contrasena === '') {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para validar contraseña de mesero.']);
+      return;
+    }
+
+    try {
+      $esValida = $this->empresaRepositorio->verificarContrasenaMesero($id_empresa, $contrasena);
+      http_response_code(200);
+      echo json_encode(['valida' => $esValida]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
     }
   }
 

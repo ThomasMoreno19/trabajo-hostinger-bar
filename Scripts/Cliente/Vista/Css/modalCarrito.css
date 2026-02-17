@@ -257,3 +257,72 @@
     background-color: #555 !important;
     cursor: not-allowed !important;
 }
+
+.mensaje-fuera-horario {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.modal-horarios-cafeteria {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.7); /* opcional, más lindo */
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;  /* centro horizontal */
+  align-items: center;      /* centro vertical */
+
+  padding: 20px;            /* para que no toque bordes en mobile */
+}
+
+.modal-horarios-contenido {
+    background-color: #222;
+    padding: 15px 20px;
+    border-radius: 10px;
+}
+
+.horarios-cafeteria{
+    color: white;
+    text-align: left;
+    padding: 0px 20px;
+}
+
+.titulo-horarios-cafeteria{
+    color: white;
+    background-color: transparent !important;
+    padding: 2px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+#btn-consultar-horarios{
+  background: none;
+  border: none;
+  padding: 0;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+
+  color: #e89e13;
+  cursor: pointer;
+  font-weight: bold;
+
+  text-decoration: underline;
+
+  display: inline;
+  line-height: inherit;
+  vertical-align: baseline;
+  font-size: 14px;
+}
+
+.dia-horario-item{
+    margin-bottom: 10px;
+}
+
+.rangos-horario{
+    margin-bottom: 5px;
+}

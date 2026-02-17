@@ -175,7 +175,7 @@ class EmpresaVista {
       <form id="formConfigurarHorariosEmpresa">
         <header id="header-wrapper">
           <h2 id="titulo-wrapper" class="titulo">Configuración de Horarios</h2>
-          <button id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+          <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
         </header>
 
         <div class="modulos">
@@ -242,7 +242,7 @@ class EmpresaVista {
       <form id="formConfigurarDiasNoLaborales">
         <header id="header-wrapper">
           <h2 id="titulo-wrapper" class="titulo">Configuración de días no laborales</h2>
-          <button id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+          <button id="cerrar-wrapper-dias-no-laborales" class="boton-cerrar">&times;</button>
         </header>
 
         <div class="modulos">
@@ -394,7 +394,6 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
-        <button type = "button" class = "submit-button" id = "configurar-dias-no-laborales" >Configurar días no laborales</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;

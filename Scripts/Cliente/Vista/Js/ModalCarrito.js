@@ -28,7 +28,6 @@ class ModalCarrito {
   }
 
   crearModal() {
-    this.validarHorarios();
     // Elimino modal previo si existe (evita duplicados)
     this.wrapper = document.getElementById("modal-carrito-wrapper");
     if (this.wrapper) this.wrapper.remove();
@@ -51,8 +50,6 @@ class ModalCarrito {
       </header>
 
       <div class="modal-content">
-
-        <!-- LISTA DE ARTÍCULOS -->
         <div id="lista-articulos-wrapper">
           <div id="lista-articulos-contenedor">
             <div id="cuerpo-tabla-carrito"></div>
@@ -60,11 +57,11 @@ class ModalCarrito {
         </div>
 
         <div id="zona-total">
-          <p id="mensaje-fuera-horario" class="hidden"></p>
           <div id="total-carrito">
               Total: $<span id="monto-total-carrito">0.00</span>
           </div>
-
+          
+          <p id="mensaje-fuera-horario" class="hidden mensaje-fuera-horario"></p>
           <button class = "boton hidden" id="boton-finalizar-compra">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
               <!-- ICONO WHATSAPP -->
@@ -76,7 +73,7 @@ class ModalCarrito {
             Enviar pedido
           </button>
 
-          <button class="boton hidden" id="boton-siguiente-paso">
+          <button class="boton hidden desactivado" id="boton-siguiente-paso">
             Continuar
             <svg 
               xmlns="http://www.w3.org/2000/svg"
@@ -102,66 +99,99 @@ class ModalCarrito {
     `;
     
     this.botonSigPaso = this.wrapper.querySelector("#boton-siguiente-paso");
-    const desactivado = this.validarHorarios()
-    ? this.botonSigPaso.classList.remove("desactivado")
-    : this.botonSigPaso.classList.add("desactivado");
 
     document.body.appendChild(this.wrapper);
   }
 
 
   diaIndexToNombre(diaIndex) {
-    const mapa = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const mapa = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     return mapa[diaIndex] || `Día ${diaIndex}`;
   }
 
-  estaAbiertoAhora() {
+  esDiaNoLaboralHoy() {
     const ahora = new Date();
     const dd = String(ahora.getDate()).padStart(2, '0');
     const mm = String(ahora.getMonth() + 1).padStart(2, '0');
     const hoyDm = `${dd}/${mm}`;
 
-    if ((this.horarios.noLab || []).includes(hoyDm)) {
-      return false;
-    }
+    return (this.horarios.noLab || []).includes(hoyDm);
+  }
+
+
+  estaAbiertoPorHorarioAhora() {
+    const ahora = new Date();
 
     const jsDay = ahora.getDay(); // 0 domingo..6 sábado
-    const diaIndex = jsDay === 0 ? 6 : jsDay - 1; // 0 lunes..6 domingo
 
-    const registroDia = (this.horarios.horarios || []).find(h => Number(h.diaIndex) === diaIndex);
-    if (!registroDia || !Array.isArray(registroDia.rangos) || registroDia.rangos.length === 0) {
-      return false;
-    }
+    // Tu sistema: 0 lunes..6 domingo
+    const diaIndexHoy = jsDay === 0 ? 6 : jsDay;
+    const diaIndexAyer = diaIndexHoy === 0 ? 6 : diaIndexHoy;
+
+    const horarios = this.horarios.horarios || [];
+
+    const registroHoy = horarios.find(h => Number(h.diaIndex) === diaIndexHoy);
+    const registroAyer = horarios.find(h => Number(h.diaIndex) === diaIndexAyer);
 
     const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
 
-    return registroDia.rangos.some(r => {
-      if (!r.apertura || !r.cierre) return false;
+    const estaEnRango = (r, permitirCruce) => {
+      if (!r?.apertura || !r?.cierre) return false;
+
       const [ha, ma] = r.apertura.split(':').map(Number);
       const [hc, mc] = r.cierre.split(':').map(Number);
+
       const apertura = ha * 60 + ma;
       const cierre = hc * 60 + mc;
 
+      // Normal
       if (cierre > apertura) {
         return minutosActuales >= apertura && minutosActuales < cierre;
       }
 
+      // Cruza medianoche
+      if (!permitirCruce) return false;
+
       return minutosActuales >= apertura || minutosActuales < cierre;
+    };
+
+    // 1) Horarios del día de hoy
+    const abiertoHoy = (registroHoy?.rangos || []).some(r => estaEnRango(r, true));
+    if (abiertoHoy) return true;
+
+    // 2) Horarios del día anterior que cruzan medianoche
+    const abiertoPorAyer = (registroAyer?.rangos || []).some(r => {
+      if (!r?.apertura || !r?.cierre) return false;
+
+      const [ha, ma] = r.apertura.split(':').map(Number);
+      const [hc, mc] = r.cierre.split(':').map(Number);
+
+      const apertura = ha * 60 + ma;
+      const cierre = hc * 60 + mc;
+
+      // Solo si cruza medianoche
+      if (cierre > apertura) return false;
+
+      // En el día siguiente solo vale la parte 00:00 -> cierre
+      return minutosActuales < cierre;
     });
+
+    return abiertoPorAyer;
   }
+
 
   actualizarDisponibilidadPedido() {
     const mensaje = this.wrapper?.querySelector('#mensaje-fuera-horario');
     if (!mensaje) return;
 
-    const abierto = this.estaAbiertoAhora();
+    const abierto = this.estaAbiertoPorHorarioAhora() && !this.esDiaNoLaboralHoy();
 
     if (this.esMesero) {
-      this.botonEnviar.disabled = !abierto;
-      this.botonEnviar.classList.toggle('boton-deshabilitado-horario', !abierto);
+      this.botonEnviar.desactivado = !abierto;
+      this.botonEnviar.classList.toggle('desactivado', !abierto);
     } else {
-      this.botonSigPaso.disabled = !abierto;
-      this.botonSigPaso.classList.toggle('boton-deshabilitado-horario', !abierto);
+      this.botonSigPaso.desactivado = !abierto;
+      this.botonSigPaso.classList.toggle('desactivado', !abierto);
     }
 
     if (abierto) {
@@ -171,8 +201,8 @@ class ModalCarrito {
     }
 
     mensaje.classList.remove('hidden');
-    mensaje.innerHTML = 'No se pueden realizar pedidos fuera de horario, <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
-
+    mensaje.innerHTML = 'No se pueden realizar pedidos fuera de horario <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
+    if (this.esDiaNoLaboralHoy()) mensaje.innerHTML = 'Hoy es día no laboral <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
     const btn = mensaje.querySelector('#btn-consultar-horarios');
     btn?.addEventListener('click', () => this.mostrarModalHorarios());
   }
@@ -185,25 +215,40 @@ class ModalCarrito {
     modal.id = 'modal-horarios-cafeteria';
     modal.className = 'modal-horarios-cafeteria';
 
-    const items = (this.horarios.horarios || [])
-      .slice()
-      .sort((a, b) => Number(a.diaIndex) - Number(b.diaIndex))
-      .map(dia => {
-        const rangos = (dia.rangos || [])
-          .map(r => `${r.apertura} - ${r.cierre}`)
-          .join(' | ');
-        return `<li><strong>${this.diaIndexToNombre(Number(dia.diaIndex))}:</strong> ${rangos || 'Cerrado'}</li>`;
+    const grupos = this.agruparHorariosPorRangos(this.horarios.horarios);
+
+    const items = (grupos || [])
+      .map(g => {
+        const titulo =
+          g.desde === g.hasta
+            ? this.diaIndexToNombre(g.desde)
+            : (g.desde < g.hasta
+                ? `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`
+                : `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`);
+
+
+        const rangosHTML = (g.rangos || [])
+          .map(r => `<div class="rango-horario">${r.apertura} - ${r.cierre}</div>`)
+          .join('');
+
+        return `
+          <li class="dia-horario-item">
+            <strong class="dia-horario-titulo">${titulo}</strong>
+            <div class="rangos-horario">
+              ${rangosHTML || `<div class="rango-horario">Cerrado</div>`}
+            </div>
+          </li>
+        `;
       })
       .join('');
 
-    const noLab = (this.horarios.noLab || []).join(', ') || 'Sin días no laborales configurados';
-
     modal.innerHTML = `
       <div class="modal-horarios-contenido">
-        <h3>Horarios de la cafetería</h3>
-        <ul>${items || '<li>No hay horarios configurados</li>'}</ul>
-        <p><strong>Días no laborales:</strong> ${noLab}</p>
-        <button type="button" class="boton" id="cerrar-modal-horarios-cafeteria">Cerrar</button>
+        <h3 class="titulo-horarios-cafeteria">Horarios de la cafetería</h3>
+
+        <ul class="horarios-cafeteria">
+          ${items || '<li>No hay horarios configurados</li>'}
+        </ul>
       </div>
     `;
 
@@ -213,8 +258,76 @@ class ModalCarrito {
       if (e.target === modal) modal.remove();
     });
 
-    modal.querySelector('#cerrar-modal-horarios-cafeteria')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#cerrar-modal-horarios-cafeteria')
+      ?.addEventListener('click', () => modal.remove());
   }
+
+
+  agruparHorariosPorRangos(horarios) {
+    const ordenados = (horarios || [])
+      .slice()
+      .sort((a, b) => Number(a.diaIndex) - Number(b.diaIndex));
+
+    const grupos = [];
+    let grupoActual = null;
+
+    for (const dia of ordenados) {
+      const diaIndex = Number(dia.diaIndex);
+
+      const firma = (dia.rangos || [])
+        .slice()
+        .sort((a, b) => a.apertura.localeCompare(b.apertura))
+        .map(r => `${r.apertura}-${r.cierre}`)
+        .join('|') || 'CERRADO';
+
+      if (!grupoActual) {
+        grupoActual = {
+          desde: diaIndex,
+          hasta: diaIndex,
+          firma,
+          rangos: dia.rangos || []
+        };
+        continue;
+      }
+
+      const esConsecutivo = diaIndex === grupoActual.hasta + 1;
+      const mismaFirma = firma === grupoActual.firma;
+
+      if (esConsecutivo && mismaFirma) {
+        grupoActual.hasta = diaIndex;
+      } else {
+        grupos.push(grupoActual);
+        grupoActual = {
+          desde: diaIndex,
+          hasta: diaIndex,
+          firma,
+          rangos: dia.rangos || []
+        };
+      }
+    }
+
+    if (grupoActual) grupos.push(grupoActual);
+
+    // 🔥 PARTE IMPORTANTE: unión circular (sábado + domingo)
+    if (grupos.length >= 2) {
+      const primero = grupos[0];
+      const ultimo = grupos[grupos.length - 1];
+
+      const primeroEsDomingo = primero.desde === 0;
+      const ultimoEsSabado = ultimo.hasta === 6;
+
+      if (primeroEsDomingo && ultimoEsSabado && primero.firma === ultimo.firma) {
+        // Unimos: el grupo final absorbe el primero
+        ultimo.hasta = primero.hasta; // normalmente 0
+        grupos.shift(); // sacamos el primero
+      }
+    }
+
+    return grupos;
+  }
+
+
+
 
   renderCarrito() {
     const cuerpo = document.getElementById("cuerpo-tabla-carrito");
@@ -817,43 +930,6 @@ class ModalCarrito {
         DOMDireccion.classList.remove("hidden");
         DOMEspecificaciones.classList.remove("hidden");
       }
-    });
-  }
-
-  validarHorarios() {
-    const ahora = new Date();
-    const diaSemana = ahora.getDay(); // 0 (Domingo) a 6 (Sábado)
-    const horaActual = ahora.getHours() + ahora.getMinutes() / 60; // Hora en formato decimal
-    console.log("Hora actual:", this.horarios);
-    const horarioHoy = this.horarios.horarios.find(h => h.dia === diaSemana);
-    if (!horarioHoy) {
-      return false; // Si no hay horario para hoy, se asume que está cerrado
-    }
-
-    if (horaActual < horarioHoy.horaApertura || horaActual > horarioHoy.horaCierre) {
-      return false; // Fuera del horario de atención
-    }
-  }
-
-  mostrarHorarios(){
-    const wrapper = document.createElement("div");
-    wrapper.id = "modal-horarios-wrapper";
-    wrapper.innerHTML = `
-      <div class="modal-horarios">
-        <h2>Horarios de atención</h2>
-        <ul>
-          ${this.horarios.map(h => {
-            const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-            return `<li>${dias[h.dia]}: ${Math.floor(h.horaApertura)}:${(h.horaApertura % 1) * 60 === 0 ? '00' : '30'} - ${Math.floor(h.horaCierre)}:${(h.horaCierre % 1) * 60 === 0 ? '00' : '30'}</li>`;
-          }).join("")}
-        </ul>
-        <button id="cerrar-horarios" class="boton-cerrar">&times;</button>
-      </div>
-    `;
-
-    document.body.appendChild(wrapper);
-    document.getElementById("cerrar-horarios").addEventListener("click", () => {
-      wrapper.remove();
     });
   }
 }

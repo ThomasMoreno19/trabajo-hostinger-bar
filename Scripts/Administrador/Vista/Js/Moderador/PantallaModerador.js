@@ -9,6 +9,7 @@ class PantallaModerador {
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
     this.diasNoLaboralesGuardados = [];
+    this.horarios = [];
     this.MINUTOS_DIA = 1440;
     
     this.botonListaArticulos = document.getElementById('boton-mostrar-articulos');
@@ -31,25 +32,7 @@ class PantallaModerador {
     this.empresa = new EmpresaVista(data);
 
     try {
-      const respuesta = await this.gestor.obtenerHorarios(this.empresa.id);
-
-      this.diasNoLaboralesGuardados = Array.isArray(respuesta.noLab)
-        ? [...new Set(respuesta.noLab)]
-        : [];
-
-      // Horarios: agregamos dia y nombre por cada día
-      this.horariosGuardados = Array.isArray(respuesta.horarios)
-        ? respuesta.horarios.map((h) => {
-            const diaIndex = Number(h.diaIndex);
-
-            return {
-              ...h,
-              dia: DIAS_SEMANA[diaIndex] || '',
-              nombre: NOMBRE_DIAS[diaIndex] || '',
-              rangos: Array.isArray(h.rangos) ? h.rangos : []
-            };
-          })
-        : [];
+      this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
 
     } catch (error) {
       this.horariosGuardados = [];
@@ -423,7 +406,6 @@ class PantallaModerador {
     const botonSecccionModificar = document.getElementById('seccion-modificar');
     const botonVisitarPagina = document.getElementById('visitar-pagina');
     const botonConfigurarHorarios = document.getElementById('configurar-horarios');
-    const botonConfigurarDiasNoLaborales = document.getElementById('configurar-dias-no-laborales');
 
     
     const botonVisitarGestion = document.getElementById('visitar-gestion');
@@ -457,12 +439,6 @@ class PantallaModerador {
       await this.abrirModalConfigurarHorarios(modal);
       document.body.removeChild(modal);
     });
-
-    botonConfigurarDiasNoLaborales.addEventListener('click', async (event) => {
-      event.preventDefault();
-      await this.abrirModalConfigurarDiasNoLaborales(modal);
-      document.body.removeChild(modal);
-    });
   }
 
   async abrirModalConfigurarHorarios() {
@@ -470,6 +446,21 @@ class PantallaModerador {
     this.listaCentral.classList.add('hidden');
 
     document.body.appendChild(modal);
+    
+    this.horariosGuardados = Array.isArray(this.horarios.horarios)
+        ? this.horarios.horarios.map((h) => {
+            const diaIndex = Number(h.diaIndex);
+
+            return {
+              ...h,
+              dia: DIAS_SEMANA[diaIndex] || '',
+              nombre: NOMBRE_DIAS[diaIndex] || '',
+              rangos: Array.isArray(h.rangos) ? h.rangos : []
+            };
+          })
+        : [];
+
+
     this.renderHorariosEnModal(modal);
 
     const botonFormDiasNoLaborales = document.getElementById('btnFormDiasNoLaborales');
@@ -485,7 +476,7 @@ class PantallaModerador {
       botonCerrar.addEventListener("click", (e) => {
         e.preventDefault();
 
-        const hayHorarios = this.horariosGuardados && this.horariosGuardados.length > 0;
+        const hayHorarios = this.horarios.horarios.length !== this.horariosGuardados.length;
 
         if (hayHorarios) {
           const seguro = confirm(
@@ -494,9 +485,6 @@ class PantallaModerador {
 
           if (!seguro) return;
         }
-
-        // si confirma o no había horarios:
-        this.horariosGuardados = []; // 🔥 borra progreso
 
         this.listaCentral.classList.remove("hidden");
         modal.classList.add("hidden");
@@ -613,23 +601,26 @@ class PantallaModerador {
 
       try {
         await this.gestor.guardarHorarios(horarios, this.empresa.id);
-
         alert("Horarios guardados correctamente ✔️");
+        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id); // Actualizamos los horarios con lo que se guardó
+        this.horariosGuardados = Array.isArray(this.horarios.horarios)
+        ? this.horarios.horarios.map((h) => {
+            const diaIndex = Number(h.diaIndex);
 
+            return {
+              ...h,
+              dia: DIAS_SEMANA[diaIndex] || '',
+              nombre: NOMBRE_DIAS[diaIndex] || '',
+              rangos: Array.isArray(h.rangos) ? h.rangos : []
+            };
+          })
+        : [];
         // limpiar progreso
-        this.horariosGuardados = [];
         this.renderHorariosEnModal(modal);
-
-        // cerrar modal
-        this.listaCentral.classList.remove("hidden");
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-
       } catch (error) {
         alert(`Error guardando horarios: ${error.message}`);
       }
     });
-
   }
   
   async abrirModalConfigurarDiasNoLaborales() {
@@ -645,15 +636,14 @@ class PantallaModerador {
       document.body.removeChild(modal);
     });
 
-    const botonCerrar = modal.querySelector('#cerrar-wrapper');
+    const botonCerrar = modal.querySelector('#cerrar-wrapper-dias-no-laborales');
     const botonAgregarDia = modal.querySelector('#agregarDiaNoLaboral');
     const botonAgregarRango = modal.querySelector('#agregarRangoNoLaboral');
     const form = modal.querySelector('#formConfigurarDiasNoLaborales');
 
     try {
-      const respuesta = await this.gestor.obtenerHorarios(this.empresa.id);
-      this.diasNoLaboralesGuardados = Array.isArray(respuesta.noLab)
-        ? [...new Set(respuesta.noLab)]
+      this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
+        ? [...new Set(this.horarios.noLab)]
         : [];
     } catch (error) {
       this.diasNoLaboralesGuardados = [];
@@ -663,6 +653,16 @@ class PantallaModerador {
     this.renderDiasNoLaboralesEnModal(modal);
 
     botonCerrar.addEventListener('click', (e) => {
+      const hayHorarios = this.horarios.noLab.length !== this.diasNoLaboralesGuardados.length;
+
+        if (hayHorarios) {
+          const seguro = confirm(
+            "¿Estás seguro de que querés salir?\nSe borrará tu progreso."
+          );
+
+          if (!seguro) return;
+        }
+        
       e.preventDefault();
       this.listaCentral.classList.remove('hidden');
       modal.classList.add('hidden');
@@ -713,11 +713,11 @@ class PantallaModerador {
 
       try {
         await this.gestor.guardarDiasNoLaborales(this.diasNoLaboralesGuardados, this.empresa.id);
+        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id); // Actualizamos los horarios con lo que se guardó
+        this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
+        ? [...new Set(this.horarios.noLab)]
+        : [];
         alert('Días no laborales guardados correctamente ✔️');
-
-        this.listaCentral.classList.remove('hidden');
-        modal.classList.add('hidden');
-        document.body.removeChild(modal);
       } catch (error) {
         alert(`Error guardando días no laborales: ${error.message}`);
       }

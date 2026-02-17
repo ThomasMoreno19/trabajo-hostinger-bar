@@ -571,7 +571,7 @@ class GestorModerador {
             horarios: horarios
         };
 
-        fetch(`/empresa/guardar-horarios`, {
+        const response = await fetch(`/empresa/guardar-horarios`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(bodyData),
@@ -603,7 +603,7 @@ class GestorModerador {
             throw new Error(err.error || 'Error guardando días no laborales');
         }
 
-        return await response.json();
+        return await response;
     }
 
     async obtenerHorarios(id_empresa) {
