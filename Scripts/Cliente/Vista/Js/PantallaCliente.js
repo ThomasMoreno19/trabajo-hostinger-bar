@@ -16,6 +16,7 @@ class PantallaCliente {
       this.onClickVolver = this.eventClickVolver.bind(this);
       this.onClickTelefono = this.eventClickTelefono.bind(this);
       this.onClickModalCarrito = this.abrirModalCarrito.bind(this);
+      this.onPopState = this.eventPopState.bind(this);
       this.botonVolver = document.getElementById('boton-volver');
       this.tituloRubros= document.getElementById('titulo-rubros');
       this.loader = document.getElementById('loader');
@@ -32,7 +33,8 @@ class PantallaCliente {
       // Almacenamiento de referencias a los elementos del DOM
       this.todosLosArticulos = [];
       this.todosLosRubros = [];
-      
+      this.enVistaRubro = false;
+
       this.agregarEventListeners();
     }
     
@@ -78,6 +80,9 @@ class PantallaCliente {
 
       this.botonVolver.removeEventListener('click', this.onClickVolver);
       this.botonVolver.addEventListener('click', this.onClickVolver);
+
+      window.removeEventListener('popstate', this.onPopState);
+      window.addEventListener('popstate', this.onPopState);
     }
     
     async habilitarVentanaPrincipal() {
@@ -176,6 +181,7 @@ class PantallaCliente {
     
     // Al clickear un rubro, mostrar los artículos de ese rubro
     filtrarArticulosPorRubro(idRubroSeleccionado) {
+      this.registrarNavegacionRubro(idRubroSeleccionado);
       this.limpiarBusqueda();
       this.botonVolver.classList.remove('hidden');
       this.barraBusqueda.classList.remove('hidden');
@@ -265,7 +271,7 @@ class PantallaCliente {
         if (!nombre.includes(textoBusqueda)) return;
 
         const clon = articulo.cloneNode(true);
-        clon.onClick =() => {
+        clon.addEventListener('click', () => {
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -282,7 +288,7 @@ class PantallaCliente {
           }
           this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
           this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
-        };
+        });
         
         listaPlana.appendChild(clon);
       });
@@ -357,7 +363,7 @@ class PantallaCliente {
 
       articulosFiltrados.forEach(a => {
         const clon = a.cloneNode(true);
-        clon.onClick = () => {
+        clon.addEventListener('click', () => {
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -367,13 +373,14 @@ class PantallaCliente {
           }
           else {
             clon.classList.remove('seleccionado');
+            this.carrito.eliminarArticulo(id);
             this.listaArticulosSeleccionados =
               this.listaArticulosSeleccionados.filter(x => x !== id);
             this.sacarArticulo(id);
           }
           this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
           this.botonCarrito.classList.toggle('hidden', this.listaArticulosSeleccionados.length === 0);
-        };
+        });
         listaPlana.appendChild(clon);
       });
 
@@ -415,6 +422,7 @@ class PantallaCliente {
 
     
     volverAtras(){
+      this.enVistaRubro = false;
       this.limpiarBusqueda();
       
       // Hide the back button and search bar
@@ -794,6 +802,29 @@ class PantallaCliente {
     }
 
     eventClickVolver() {
+      if (this.enVistaRubro && window.history.state?.vistaCarta === 'rubro') {
+        window.history.back();
+        return;
+      }
+
+      this.restaurarVistaOriginal();
+      this.barraBusqueda.value = '';
+      this.volverAtras();
+    }
+
+    registrarNavegacionRubro(idRubro) {
+      if (window.history.state?.vistaCarta === 'rubro') {
+        window.history.replaceState({ vistaCarta: 'rubro', idRubro }, '', window.location.href);
+      } else {
+        window.history.pushState({ vistaCarta: 'rubro', idRubro }, '', window.location.href);
+      }
+
+      this.enVistaRubro = true;
+    }
+
+    eventPopState() {
+      if (!this.enVistaRubro) return;
+
       this.restaurarVistaOriginal();
       this.barraBusqueda.value = '';
       this.volverAtras();
@@ -819,6 +850,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pantalla = new PantallaCliente();
   await pantalla.init();
   await pantalla.habilitarVentanaPrincipal();
+  if (!window.history.state || window.history.state.vistaCarta !== 'home') {
+    window.history.replaceState({ vistaCarta: 'home' }, '', window.location.href);
+  }
+
   let ultimaPosicionScroll = 0;
   
   window.addEventListener('scroll', () => {
