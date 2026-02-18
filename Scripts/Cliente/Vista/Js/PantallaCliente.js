@@ -533,11 +533,6 @@ class PantallaCliente {
 
       const validar = async () => {
         const contrasena = input.value.trim();
-        if (!contrasena) {
-          error.classList.remove('hidden');
-          error.textContent = 'Ingresá una contraseña.';
-          return;
-        }
 
         btn.disabled = true;
         btn.textContent = 'Validando...';
