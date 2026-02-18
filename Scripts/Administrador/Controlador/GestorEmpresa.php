@@ -410,7 +410,7 @@ class GestorEmpresa {
     $id_empresa = (int)($datos['id_empresa'] ?? 0);
     $contrasena = (string)($datos['contrasena'] ?? '');
 
-    if (empty($id_empresa) || $contrasena === '') {
+    if (empty($id_empresa)) {
       http_response_code(400);
       echo json_encode(['error' => 'Faltan datos para validar contraseña de mesero.']);
       return;
