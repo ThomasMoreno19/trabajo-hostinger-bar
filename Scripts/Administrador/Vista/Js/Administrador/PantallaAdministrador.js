@@ -52,7 +52,6 @@ class PantallaAdministrador {
     document.body.appendChild(MODAL);
     const BOTON_CONFIGURAR_HORARIOS = document.getElementById('configurar-horarios');
     BOTON_CONFIGURAR_HORARIOS.classList.add('hidden');
-    const BOTON_CAMBIAR_LOGO = document.getElementById('cambiar-logo');
     const BOTON_SECCION_MODIFICAR = document.getElementById('seccion-modificar');
     const BOTON_GESTION_ARTICULOS = document.getElementById('visitar-gestion');
     const BOTON_VISITAR_PAGINA = document.getElementById('visitar-pagina');
@@ -76,12 +75,6 @@ class PantallaAdministrador {
     BOTON_SECCION_MODIFICAR.addEventListener('click', async (event) => {
       event.preventDefault();
       await this.abrirModalModificar(empresa, MODAL);
-      document.body.removeChild(MODAL);
-    });
-    
-    BOTON_CAMBIAR_LOGO.addEventListener('click', async (event) => {
-      event.preventDefault();
-      await this.abrirModalCambiarLogo(empresa, MODAL);
       document.body.removeChild(MODAL);
     });
   }
@@ -120,6 +113,11 @@ class PantallaAdministrador {
           }
         });
       });
+
+    const botonCerrar = document.getElementById('cerrar-wrapper');
+    botonCerrar.addEventListener('click', () => {
+      document.body.removeChild(MODAL);
+    });
     const FORM = document.getElementById('formNuevaEmpresa');
     FORM.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -191,6 +189,13 @@ class PantallaAdministrador {
         }
       });
     });
+
+    const botonCerrar = document.getElementById('cerrar-wrapper');
+    botonCerrar.addEventListener('click', () => {
+      MODAL.classList.add('hidden');
+      document.body.appendChild(modalPadre);
+      document.body.removeChild(MODAL);
+    });
     
     const FORM = document.getElementById('formModificarEmpresa');
     FORM.addEventListener('submit', async (event) => {
@@ -204,6 +209,7 @@ class PantallaAdministrador {
       const EFECTIVO = FORMDATA.get('efectivo') === 'true';
       const TARJETA = FORMDATA.get('tarjeta') === 'true';
       const TRANSFERENCIA = FORMDATA.get('transferencia') === 'true';
+      const IMAGEN = document.getElementById('imagen').files[0] || null;
       const USUARIO = FORMDATA.get('usuario');
       const CONTRASENA = FORMDATA.get('contrasena');
       const CONTRASENA_MESERO = FORMDATA.get('contrasenaMesero');
@@ -211,7 +217,7 @@ class PantallaAdministrador {
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
         await this.gestor.modificarModerador(MODERADOR.id, USUARIO, CONTRASENA);
-        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO);
+        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
         MODAL.classList.add('hidden');
         document.body.removeChild(MODAL);
         await this.mostrarLista();
@@ -222,34 +228,7 @@ class PantallaAdministrador {
     });
   }
   
-  async abrirModalCambiarLogo(empresa, modalPadre) {
-    const MODAL = empresa.modalCambiarLogo();
-    
-    document.body.appendChild(MODAL);
-    
-    MODAL.addEventListener('click', (event) => {
-    if (event.target === MODAL) {
-      document.body.appendChild(modalPadre);
-      document.body.removeChild(MODAL);
-    }});
-
-    const FORM = document.getElementById('formCambiarLogoEmpresa');
-    FORM.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const FORMDATA = new FormData(FORM);
-      const IMAGEN = FORMDATA.get('imagen');
-      
-      try {
-        await this.gestor.cambiarLogoEmpresa(empresa.id, IMAGEN, empresa.nombre);
-        MODAL.classList.add('hidden');
-        document.body.removeChild(MODAL);
-        await this.mostrarLista();
-        
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    });
-  }
+  
 }
 
 

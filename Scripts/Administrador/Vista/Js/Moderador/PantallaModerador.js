@@ -316,9 +316,9 @@ class PantallaModerador {
   // Método auxiliar para crear el HTML del modal
   modalCargarArticulos() {
     const modal = document.createElement('div');
-    modal.classList.add('modal-backdrop');
+    modal.classList.add('modal');
     modal.innerHTML = `
-      <div class="modal-content">
+      <div class="modal-content-partial">
         <h2>Excel</h2>
         <form id="form-cargar">
           <div class="form-group">
@@ -339,6 +339,7 @@ class PantallaModerador {
   async abrirModalModificar(modalPadre) {
     const moderador = await this.gestor.obtenerModerador(this.empresa.id);
     const modal = this.empresa.modalModificarParaModerador(moderador);
+    this.listaCentral.classList.add('hidden');
     
     document.body.appendChild(modal);
     modal.addEventListener('click', (event) => {
@@ -368,6 +369,14 @@ class PantallaModerador {
         });
       });
 
+      const botonCerrar = document.getElementById('cerrar-wrapper');
+      botonCerrar.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        document.body.removeChild(modal);  
+        document.body.appendChild(modalPadre);
+        this.listaCentral.classList.remove('hidden');
+      });
+
       const form = document.getElementById('formModificarEmpresa');
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -389,7 +398,7 @@ class PantallaModerador {
           this.empresa.update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia);
           modal.classList.add('hidden');
           document.body.removeChild(modal);
-          await this.mostrarLista();
+          this.listaCentral.classList.remove('hidden');
           
         } catch (error) {
           alert(`Error: ${error.message}`);
@@ -402,7 +411,6 @@ class PantallaModerador {
     
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
-    const botonCambiarLogo = document.getElementById('cambiar-logo');
     const botonSecccionModificar = document.getElementById('seccion-modificar');
     const botonVisitarPagina = document.getElementById('visitar-pagina');
     const botonConfigurarHorarios = document.getElementById('configurar-horarios');
@@ -425,12 +433,6 @@ class PantallaModerador {
     botonSecccionModificar.addEventListener('click', async (event) => {
       event.preventDefault();
       await this.abrirModalModificar(modal);
-      document.body.removeChild(modal);
-    });
-    
-    botonCambiarLogo.addEventListener('click', async (event) => {
-      event.preventDefault();
-      await this.abrirModalCambiarLogo(modal);
       document.body.removeChild(modal);
     });
 
@@ -801,36 +803,6 @@ class PantallaModerador {
         this.diasNoLaboralesGuardados = this.diasNoLaboralesGuardados.filter((d) => d !== fecha);
         this.renderDiasNoLaboralesEnModal(modal);
       });
-    });
-  }
-
-
-  async abrirModalCambiarLogo(modalPadre) {
-    const modal = this.empresa.modalCambiarLogo();
-    
-    document.body.appendChild(modal);
-    
-    modal.addEventListener('click', (event) => {
-      if (event.target === modal) {
-        document.body.appendChild(modalPadre);
-        document.body.removeChild(modal);
-      }
-    });
-
-    const form = document.getElementById('formCambiarLogoEmpresa');
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const imagen = formData.get('imagen');
-      
-      try {
-        await this.gestor.cambiarLogoEmpresa(this.empresa.id, imagen, this.empresa.nombre);
-        modal.classList.add('hidden');
-        document.body.removeChild(modal);
-        await this.mostrarLista();
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
     });
   }
   

@@ -160,41 +160,38 @@ class GestorAdministrador {
       }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero) {
-      const bodyData = {
-        id: id,
-        nombre: nombre,
-        telefono: telefono,
-        ubicacion: ubicacion,
-        tieneCarrito: tieneCarrito,
-        moduloMesero: moduloMesero,
-        efectivo: efectivo,
-        tarjeta: tarjeta,
-        transferencia: transferencia,
-        contrasenaMesero: contrasenaMesero
-      };
-      
-      try {
-        const response = await fetch(`/empresa/modificar`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(bodyData),
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Error desconocido al modificar empresa' }));
-          throw new Error(errorData.message || `Error al modificar la empresa: ${response.status}`);
-        }
-        
-        // El backend debe devolver el objeto de la nueva empresa creada.
-        const empresa = await response.json();
-        return empresa;
-          
-      } catch (error) {
-        console.error('Error al modificar el empresa:', error);
-        throw error;
+    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero, imagenFile) {
+      const formData = new FormData();
+
+      formData.append('id', id);
+      formData.append('nombre', nombre);
+      formData.append('telefono', telefono);
+      formData.append('ubicacion', ubicacion);
+      formData.append('tieneCarrito', tieneCarrito);
+      formData.append('moduloMesero', moduloMesero);
+      formData.append('efectivo', efectivo);
+      formData.append('tarjeta', tarjeta);
+      formData.append('transferencia', transferencia);
+      formData.append('contrasenaMesero', contrasenaMesero || '');
+
+      // Solo mandamos la imagen si el usuario eligió una
+      if (imagenFile) {
+        formData.append('imagen', imagenFile);
       }
+
+      const response = await fetch(`/empresa/modificar`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Error desconocido al modificar empresa' }));
+        throw new Error(errorData.message || `Error al modificar la empresa: ${response.status}`);
+      }
+
+      return await response.json();
     }
+
     
     async loguearAdministrador(nombre, contrasena) {
       try {

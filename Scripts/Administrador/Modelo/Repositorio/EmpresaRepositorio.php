@@ -85,7 +85,7 @@ class EmpresaRepositorio {
   }
   
   
-  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null): bool {
+  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -99,6 +99,10 @@ class EmpresaRepositorio {
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $sql .= ", contrasenaMesero = :contrasenaMesero";
+      }
+
+      if ($logo_url !== null && $logo_url !== '') {
+        $sql .= ", logo_url = :logo_url";
       }
 
       $sql .= " WHERE id = :id;";
@@ -118,6 +122,10 @@ class EmpresaRepositorio {
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $contrasenaMeseroHash = password_hash($contrasenaMesero, PASSWORD_DEFAULT);
         $stmt->bindParam(':contrasenaMesero', $contrasenaMeseroHash, PDO::PARAM_STR);
+      }
+
+      if ($logo_url !== null && $logo_url !== '') {
+        $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
       }
 
       return $stmt->execute();

@@ -148,13 +148,17 @@ class GestorEmpresa {
     $nombre = $_POST['nombre'];
     $telefono = $_POST['telefono'];
     $ubicacion = $_POST['ubicacion'];
-    $archivoImagen = $_FILES['imagen'];
     $tieneCarrito   = filter_var($_POST['tieneCarrito'], FILTER_VALIDATE_BOOLEAN);
     $moduloMesero   = filter_var($_POST['moduloMesero'], FILTER_VALIDATE_BOOLEAN);
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
     $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
+    $imagen = null;
+
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+      $imagen = $_FILES['imagen'];
+    }
 
     // 2️⃣ Validaciones
     if (empty($nombre)) {
@@ -163,17 +167,11 @@ class GestorEmpresa {
       return;
     }
 
-    if ($archivoImagen && $archivoImagen['error'] !== UPLOAD_ERR_OK) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Error al subir la imagen. Código: ' . $archivoImagen['error']]);
-      return;
-    }
-
     try {
       // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
       $logo_url = 'Archivo/Logos/Vacio.png';
-      if ($archivoImagen) {
-        $logo_url = $this->subirLogo($nombre, $archivoImagen);
+      if ($imagen) {
+        $logo_url = $this->subirLogo($nombre, $imagen);
       }
 
       // 4️⃣ Crear la empresa en la base de datos
@@ -206,16 +204,23 @@ class GestorEmpresa {
   private function modificar(): void {
     $datos = json_decode(file_get_contents('php://input'), true);
 
-    $id_empresa = (int)$datos['id'];
-    $nombre = $datos['nombre'];
-    $ubicacion = $datos['ubicacion'];
-    $telefono = $datos['telefono'];
-    $tieneCarrito = $datos['tieneCarrito'];
-    $moduloMesero = $datos['moduloMesero'];
-    $efectivo = $datos['efectivo'];
-    $tarjeta = $datos['tarjeta'];
-    $transferencia = $datos['transferencia'];
-    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
+    $id_empresa = (int)($_POST['id'] ?? 0);
+    $nombre = $_POST['nombre'];
+    $ubicacion = $_POST['ubicacion'] ?? '';
+    $telefono = $_POST['telefono'] ?? '';
+    $tieneCarrito = filter_var($_POST['tieneCarrito'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $moduloMesero = filter_var($_POST['moduloMesero'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $efectivo = filter_var($_POST['efectivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $tarjeta = filter_var($_POST['tarjeta'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $transferencia = filter_var($_POST['transferencia'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
+    $imagen = null;
+
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+      $imagen = $_FILES['imagen'];
+    }
+
+
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -225,7 +230,13 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
+      // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
+      $logo_url = '';
+      if ($imagen) {
+        $logo_url = $this->subirLogo($nombre, $imagen);
+      }
+      
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero, $logo_url);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

@@ -357,19 +357,9 @@ class ModalCarrito {
     if (this.esMesero) {
       this.botonEnviar.classList.remove("hidden");
       this.botonSigPaso.classList.add("hidden");
-      this.botonEnviar.removeEventListener("click", () => this.pedirMesa());
-      this.botonSigPaso.classList.contains("desactivado")?
-        this.botonSigPaso.removeEventListener("click", () => this.pedirMesa()):
-        this.botonSigPaso.addEventListener("click", () => this.pedirMesa());
-    }else{
+    } else {
       this.botonEnviar.classList.add("hidden");
       this.botonSigPaso.classList.remove("hidden");
-      this.botonSigPaso.removeEventListener("click", () => this.renderDatosPersonales());
-
-      this.botonSigPaso.classList.contains("desactivado")?
-        this.botonSigPaso.removeEventListener("click", () => this.renderDatosPersonales()):
-        this.botonSigPaso.addEventListener("click", () => this.renderDatosPersonales());
-      this.botonSigPaso.removeEventListener("click", () => this.pedirMesa());
     }
 
     this.actualizarDisponibilidadPedido();
@@ -462,15 +452,19 @@ class ModalCarrito {
 
     // Listener para textarea
     cuerpo.querySelectorAll(".observacion-textarea").forEach(textarea => {
+
+      // ✅ Keydown solo una vez
+      textarea.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          textarea.value = textarea.value.replace(/\n/g, "");
+        }
+      });
+
+      // ✅ Input para actualizar observaciones
       textarea.addEventListener("input", () => {
         const id = textarea.dataset.id;
         const index = Number(textarea.dataset.index);
-        textarea.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();     // evita el salto de línea
-            textarea.value = textarea.value.replace(/\n/g, "");
-          }
-        });
 
         const articulo = this.carrito.mostrarArticulos()
           .find(a => String(a.id) === String(id));
@@ -501,7 +495,9 @@ class ModalCarrito {
         }
       });
     });
+
   }
+
 
   renderDatosPersonales() {
     const listaArticulos = document.getElementById("lista-articulos-wrapper");
@@ -671,6 +667,21 @@ class ModalCarrito {
 
       cuerpo._listenerAttached = true;
     }
+
+    this.botonEnviar?.addEventListener("click", () => {
+
+      if (this.botonEnviar.desactivado) return;
+
+      // Si el botón enviar SOLO existe para mesero:
+      if (this.esMesero) {
+        this.pedirMesa();
+      }
+    });
+
+    this.botonSigPaso?.addEventListener("click", () => {
+      if (this.botonSigPaso.desactivado) return;
+        this.renderDatosPersonales();
+    });
 
     // Listener para cerrar
     if (botonCerrar) {

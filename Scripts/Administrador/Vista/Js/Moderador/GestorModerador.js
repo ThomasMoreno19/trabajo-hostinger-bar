@@ -85,8 +85,6 @@ class GestorModerador {
     
         // Eliminamos las claves encontradas
         keysToRemove.forEach(k => localStorage.removeItem(k));
-    
-        console.info(`🧹 Caché borrado (${keysToRemove.length} elementos) para empresa ${id_empresa}`);
     }
 
 

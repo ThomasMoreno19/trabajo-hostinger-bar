@@ -96,6 +96,7 @@ h2{
 }
 
 h3 {
+    text-align: center;
     color: white;
     margin: 0.3vh;
     word-wrap: break-word;
@@ -127,6 +128,33 @@ h3 {
     display: flex;
     flex-direction: column;
     align-items: center; /* Center content horizontally within dashboard */
+}
+
+.modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content-partial {
+    background-color: #16161f;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    animation: slideIn 0.3s ease-in-out;
 }
 
 .submit-button {

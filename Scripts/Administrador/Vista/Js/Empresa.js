@@ -70,7 +70,10 @@ class EmpresaVista {
     
     const htmlContent = `
       <form id="formNuevaEmpresa">
+      <div id="header-wrapper">
         <h2 id ="titulo-modal">Nueva Cafetería/Bar</h2>
+        <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+      </div>
         <div class="form-group">
           <label for="nombre">Nombre:</label>
           <input type="text" id="nombre" name="nombre" required>
@@ -138,7 +141,9 @@ class EmpresaVista {
           <label for="contrasenaMesero">Contraseña de Mesero:</label>
           <input type="password" id="contrasenaMesero" name="contrasenaMesero">
         </div>
-        <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
+        <div class="footer-wrapper">
+          <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
+        </div>
       </form>
     `;
 
@@ -306,7 +311,10 @@ class EmpresaVista {
     
     const htmlContent = `
       <form id="formModificarEmpresa">
+      <div id="header-wrapper">
         <h2 id ="titulo-modal">Modificar ${this.nombre}</h2>
+        <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+      </div>
         <div class="form-group">
           <label for="nombre">Nombre:</label>
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
@@ -359,6 +367,10 @@ class EmpresaVista {
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         <div class="form-group">
+          <label for="imagen">Imagen:</label>
+          <input type="file" id="imagen" name="imagen" accept="image/*">
+        </div>
+        <div class="form-group">
           <label for="usuario">Usuario:</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
         </div>
@@ -370,7 +382,9 @@ class EmpresaVista {
           <label for="contrasenaMesero">Contraseña de Mesero:</label>
           <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
         </div>
+        <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
+        </div>
       </form>
     `;
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
@@ -382,16 +396,15 @@ class EmpresaVista {
 
   modalConfigurarEmpresa() {
     const modalConfigurarEmpresa = document.createElement('div');
-    modalConfigurarEmpresa.classList.add('modal-backdrop');
+    modalConfigurarEmpresa.classList.add('modal-configurar');
     modalConfigurarEmpresa.id = 'modal-configuracion-empresa';
 
     const modalConfigurarEmpresaContenido = document.createElement('div');
-    modalConfigurarEmpresaContenido.classList.add('modal-content');
+    modalConfigurarEmpresaContenido.classList.add('modal-content-configurar');
     const htmlContent = `
       <form id="form-configurar-empresa">
         <h2 id = "nombre-empresa-modal">Configuración</h2>
         <button type = "button" class = "submit-button" id = "seccion-modificar" >Modificar datos</button>
-        <button type = "button" class = "submit-button" id = "cambiar-logo" >Cambiar Logo</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
@@ -414,7 +427,10 @@ class EmpresaVista {
     
     const htmlContent = `
       <form id="formModificarEmpresa">
-        <h2 id ="titulo-modal">Modificar datos</h2>
+        <div id="header-wrapper">
+          <h2 id ="titulo-modal">Modificar datos</h2>
+          <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+        </div>
         <div class="form-group">
           <label for="nombre">Nombre:</label>
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
@@ -450,6 +466,11 @@ class EmpresaVista {
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
+        
+        <div class="form-group">
+          <label for="imagen">Imagen:</label>
+          <input type="file" id="imagen" name="imagen" accept="image/*">
+        </div>
         <div class="form-group">
           <label for="usuario">Usuario:</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
@@ -462,7 +483,9 @@ class EmpresaVista {
           <label for="contrasenaMesero">Contraseña de Mesero:</label>
           <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
         </div>
-        <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
+        <div class="footer-wrapper">
+          <button type="submit" id="boton-guardar-empresa">Enviar</button>
+        </div>
       </form>
     `;
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
@@ -483,30 +506,4 @@ class EmpresaVista {
     
     return modalNuevaEmpresa;
   }
-  
-  modalCambiarLogo() {
-    const modalCambiarLogoEmpresa = document.createElement('div');
-    modalCambiarLogoEmpresa.classList.add('modal-backdrop');
-    modalCambiarLogoEmpresa.id = 'modalCambiarLogoEmpresa';
-
-    const modalCambiarLogoEmpresaContenido = document.createElement('div');
-    modalCambiarLogoEmpresaContenido.classList.add('modal-content');
-    
-    const htmlContent = `
-      <form id="formCambiarLogoEmpresa">
-        <h2 id ="titulo-modal">Logo de ${this.nombre}</h2>
-        <div class="form-group">
-          <label for="imagen">Imagen:</label>
-          <input type="file" id="imagen" name="imagen" accept="image/*">
-        </div>
-        <button type="submit" class="submit-button" id="boton-guardar-logo">Enviar</button>
-      </form>
-    `;
-
-    modalCambiarLogoEmpresaContenido.innerHTML = htmlContent;
-    modalCambiarLogoEmpresa.appendChild(modalCambiarLogoEmpresaContenido);
-    
-    return modalCambiarLogoEmpresa;
-  }
-
 }
