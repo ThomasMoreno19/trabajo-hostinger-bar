@@ -428,6 +428,7 @@ class EmpresaRepositorio {
   }
 
   public function verificarContrasenaMesero(int $id_empresa, string $contrasena): bool {
+    
     try {
       $stmt = $this->pdo->prepare(
         "SELECT contrasenaMesero FROM Empresa WHERE id = :id_empresa LIMIT 1"
@@ -436,6 +437,9 @@ class EmpresaRepositorio {
       $stmt->execute();
 
       $hash = $stmt->fetchColumn();
+      if (($hash === null || $hash === '') && $contrasena === '') {
+        return true; // si querés que vacío sea válido
+      }
 
       if (!$hash) return false;
 
