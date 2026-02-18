@@ -163,12 +163,6 @@ class GestorEmpresa {
       return;
     }
 
-    if (empty($contrasenaMesero)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Falta la contraseña de mesero.']);
-      return;
-    }
-
     if ($archivoImagen && $archivoImagen['error'] !== UPLOAD_ERR_OK) {
       http_response_code(400);
       echo json_encode(['error' => 'Error al subir la imagen. Código: ' . $archivoImagen['error']]);

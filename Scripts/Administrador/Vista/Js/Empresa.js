@@ -136,7 +136,7 @@ class EmpresaVista {
         </div>
         <div class="form-group">
           <label for="contrasenaMesero">Contraseña de Mesero:</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" required>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero">
         </div>
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
       </form>
