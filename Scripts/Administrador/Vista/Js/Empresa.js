@@ -71,20 +71,20 @@ class EmpresaVista {
     const htmlContent = `
       <form id="formNuevaEmpresa">
       <div id="header-wrapper">
-        <h2 id ="titulo-modal">Nueva Cafetería/Bar</h2>
+        <h2 id ="titulo-modal">Nueva Cafetería</h2>
         <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
       </div>
         <div class="form-group">
-          <label for="nombre">Nombre:</label>
+          <label for="nombre" class="required">Nombre</label>
           <input type="text" id="nombre" name="nombre" required>
         </div>
         <div class="form-group">
-          <label for="telefono">Nro de telefono:</label>
-          <input type="text" id="telefono" name="telefono" maxlength=18 required>
+          <label for="telefono">Nro de telefono</label>
+          <input type="text" id="telefono" name="telefono" maxlength=18>
         </div>
         <div class="form-group">
-          <label for="ubicacion">Direccion:</label>
-          <input type="text" id="ubicacion" name="ubicacion" required>
+          <label for="ubicacion">Direccion</label>
+          <input type="text" id="ubicacion" name="ubicacion">
         </div>
         <text id="titulo-modulos"> Módulos Disponibles </text>
         <div class="lista-botones">
@@ -126,19 +126,19 @@ class EmpresaVista {
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         <div class="form-group">
-          <label for="imagen">Imagen:</label>
+          <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
         </div>
         <div class="form-group">
-          <label for="usuario">Usuario:</label>
+          <label for="usuario" class="required">Usuario</label>
           <input type="text" id="usuario" name="usuario" required>
         </div>
         <div class="form-group">
-          <label for="contrasena">Contrasena:</label>
+          <label for="contrasena" class="required">Contrasena</label>
           <input type="password" id="contrasena" name="contrasena" required>
         </div>
         <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero:</label>
+          <label for="contrasenaMesero">Contraseña de Mesero</label>
           <input type="password" id="contrasenaMesero" name="contrasenaMesero">
         </div>
         <div class="footer-wrapper">
@@ -184,19 +184,19 @@ class EmpresaVista {
         </header>
 
         <div class="modulos">
-          <text id="titulo-modulos"> Seleccione los días de apertura </text>
+          <text id="titulo-modulos" class="required"> Seleccione los días de apertura </text>
 
           <div class="lista-botones">
             ${botonesDiasHTML}
           </div>
 
           <div class="form-group">
-            <label for="horaApertura">Hora de Apertura:</label>
+            <label for="horaApertura" class="required">Hora de Apertura</label>
             <input type="time" id="horaApertura" name="horaApertura" required>
           </div>
 
           <div class="form-group">
-            <label for="horaCierre">Hora de Cierre:</label>
+            <label for="horaCierre" class="required">Hora de Cierre</label>
             <input type="time" id="horaCierre" name="horaCierre" required>
           </div>
 
@@ -316,16 +316,16 @@ class EmpresaVista {
         <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
       </div>
         <div class="form-group">
-          <label for="nombre">Nombre:</label>
+          <label for="nombre">Nombre</label>
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="telefono">Nro de telefono:</label>
-          <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18 required>
+          <label for="telefono">Nro de telefono</label>
+          <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18 >
         </div>
         <div class="form-group">
-          <label for="ubicacion">Direccion:</label>
-          <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}" required>
+          <label for="ubicacion" >Direccion</label>
+          <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}" >
         </div>
         <text id="titulo-modulos"> Módulos Disponibles </text>
         <div class="lista-botones">
@@ -367,20 +367,20 @@ class EmpresaVista {
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         <div class="form-group">
-          <label for="imagen">Imagen:</label>
+          <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
         </div>
         <div class="form-group">
-          <label for="usuario">Usuario:</label>
+          <label for="usuario">Usuario</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="contrasena">Contrasena:</label>
+          <label for="contrasena">Contrasena</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
         <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero:</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
+          <label for="contrasenaMesero">Contraseña de Mesero</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
         </div>
         <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
@@ -405,8 +405,8 @@ class EmpresaVista {
       <form id="form-configurar-empresa">
         <h2 id = "nombre-empresa-modal">Configuración</h2>
         <button type = "button" class = "submit-button" id = "seccion-modificar" >Modificar datos</button>
-        <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
+        <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
     `;
@@ -432,16 +432,16 @@ class EmpresaVista {
           <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
         </div>
         <div class="form-group">
-          <label for="nombre">Nombre:</label>
+          <label for="nombre">Nombre</label>
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="telefono">Nro de telefono:</label>
-          <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18 required>
+          <label for="telefono">Nro de telefono</label>
+          <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18>
         </div>
         <div class="form-group">
-          <label for="ubicacion">Direccion:</label>
-          <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}" required>
+          <label for="ubicacion">Direccion</label>
+          <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}">
         </div>
         <text id="titulo-modulos"> Métodos de pago </text>
         <div class="lista-botones">
@@ -468,20 +468,20 @@ class EmpresaVista {
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         
         <div class="form-group">
-          <label for="imagen">Imagen:</label>
+          <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
         </div>
         <div class="form-group">
-          <label for="usuario">Usuario:</label>
+          <label for="usuario">Usuario</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="contrasena">Contrasena:</label>
+          <label for="contrasena">Contrasena</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
         <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero:</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña del mesero">
+          <label for="contrasenaMesero">Contraseña de Mesero</label>
+          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
         </div>
         <div class="footer-wrapper">
           <button type="submit" id="boton-guardar-empresa">Enviar</button>

@@ -164,13 +164,28 @@ h3{
 .form-group input[type="file"],
 .form-group input[type="numeric"],
 .form-group input[type="password"]{
-  width: 100%;
+  width: 40%;
   padding: 10px;
   border: transparent;
   border-radius: 5px;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.03);
   color: white;
+}
+
+.required::after {
+    content: " *";
+    color: #e69f1a;
+    font-weight: bold;
+}
+
+@media screen and (max-width: 600px) {
+  .form-group input[type="text"],
+  .form-group input[type="file"],
+  .form-group input[type="numeric"],
+  .form-group input[type="password"]{
+    width: 70%;
+  }
 }
 
 /* Animaciones */
@@ -182,4 +197,52 @@ h3{
 @keyframes slideIn {
   from { transform: translateY(-50px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+
+/* Wrapper del file */
+.file-input-wrapper {
+  width: 40%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Ocultamos el input real */
+.file-input-wrapper input[type="file"] {
+  display: none;
+}
+
+/* Botón fake */
+.file-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  transition: 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+}
+
+.file-btn:hover {
+  background: rgba(230, 159, 26, 0.25);
+  border: 1px solid rgba(230, 159, 26, 0.6);
+}
+
+/* Texto del archivo */
+.file-name {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
