@@ -33,11 +33,11 @@ class RubroVista {
     
     modalModificar(nombre) { 
         const modalModificar = document.createElement('div'); 
-        modalModificar.classList.add('modal-backdrop'); 
+        modalModificar.classList.add('modal'); 
         modalModificar.id = 'modal-modificar-rubro'; 
     
         const modalModificarContenido = document.createElement('div'); 
-        modalModificarContenido.classList.add('modal-content'); 
+        modalModificarContenido.classList.add('modal-content-partial'); 
     
         const htmlContent = `
             <form id="form-modificar-rubro" method="POST" enctype="multipart/form-data"> 

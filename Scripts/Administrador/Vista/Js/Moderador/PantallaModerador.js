@@ -191,7 +191,7 @@ class PantallaModerador {
     });
 
     botonModificarArticulo.addEventListener('click', () => {
-      this.abrirModalModificarArticulo();
+      this.abrirModalModificarArticulo(modal);
     })
   }
   
@@ -238,10 +238,10 @@ class PantallaModerador {
     });
   }
   
-  abrirModalModificarArticulo() {
+  abrirModalModificarArticulo(modalPadre) {
     const articulo = this.articuloSeleccionado;
     if (!articulo) return;
-
+    const padre = modalPadre;
     const modal = this.articuloSeleccionado.modalModificar();
     document.body.appendChild(modal);
 
@@ -268,6 +268,7 @@ class PantallaModerador {
         );
 
         document.body.removeChild(modal);
+        document.body.removeChild(padre);
         this.articuloSeleccionado = null;
         await this.habilitarVentanaPrincipal();
 

@@ -70,11 +70,11 @@ class ArticuloVista {
     
     modalConfigurar() {
         const modalConfigurarArticulo = document.createElement('div');
-        modalConfigurarArticulo.classList.add('modal-backdrop');
+        modalConfigurarArticulo.classList.add('modal');
         modalConfigurarArticulo.id = 'modal-configurar-articulo';
 
         const modalContenido = document.createElement('div');
-        modalContenido.classList.add('modal-content');
+        modalContenido.classList.add('modal-content-partial');
 
         const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : '';
 
@@ -94,11 +94,11 @@ class ArticuloVista {
     
     modalModificar() {
         const modal = document.createElement('div');
-        modal.classList.add('modal-backdrop');
+        modal.classList.add('modal');
         modal.id = 'modal-modificar-articulo';
 
         const contenido = document.createElement('div');
-        contenido.classList.add('modal-content');
+        contenido.classList.add('modal-content-partial');
 
         // Quitar puntos del precio (si lo guardas con formato 1.234, etc.)
         const precioSinPuntos = this.sacarPuntosPrecio(this.precio);
