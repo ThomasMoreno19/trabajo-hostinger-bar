@@ -100,6 +100,15 @@ class PantallaModerador {
       if (esArticulo) {
         // 1. Obtener la lista de todos los rubros
         const rubrosRecibidos = await this.gestor.mostrarListaRubros(this.empresa.id);
+        const articulosRecibidos = await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
+        const articulosPorRubro = articulosRecibidos.reduce((acc, articulo) => {
+          const idRubro = String(articulo.id_rubro);
+          if (!acc[idRubro]) {
+            acc[idRubro] = [];
+          }
+          acc[idRubro].push(articulo);
+          return acc;
+        }, {});
 
         if (rubrosRecibidos.length === 0) {
           lista.innerHTML = `<p class="texto-vacio"> No se encontraron artículos. </p>`;
@@ -121,8 +130,8 @@ class PantallaModerador {
           nombreRubroTitulo.textContent = nombre_rubro;
           containerRubro.appendChild(nombreRubroTitulo);
 
-          // 3. Obtener la lista de artículos para el rubro actual
-          const listaArticulosRecibidos = await this.gestor.mostrarListaArticulos(id_rubro, this.empresa.id);
+          // 3. Obtener la lista de artículos para el rubro actual (cargada en bloque)
+          const listaArticulosRecibidos = articulosPorRubro[String(id_rubro)] || [];
 
           // 4. Crear un contenedor para los artículos dentro del rubro
           const listaArticulosDiv = document.createElement('div');

@@ -44,6 +44,16 @@ class GestorModerador {
             id_empresa
         );
     }
+
+    async mostrarListaArticulosPorEmpresa(id_empresa) {
+        return await this.cacheFetch(
+            `/articulo/mostrar/empresa`,
+            { id_empresa },
+            'articulos_empresa',
+            600,
+            id_empresa
+        );
+    }
     
     async mostrarListaRubros(id_empresa) {
         return await this.cacheFetch(
@@ -71,7 +81,7 @@ class GestorModerador {
             if (
                 key &&
                 key.includes(`empresa${id_empresa}`) &&
-                (key.startsWith("rubros_") || key.startsWith("articulos_"))
+                (key.startsWith("rubros_") || key.startsWith("articulos_") || key.startsWith("articulos_empresa_"))
             ) {
                 keysToRemove.push(key);
             }
