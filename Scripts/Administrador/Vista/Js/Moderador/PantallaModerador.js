@@ -186,8 +186,10 @@ class PantallaModerador {
     
     //Se cierra el modal si se clickea afuera
     modal.addEventListener('click', (event) => {
-      if (event.target === modal)
+      if (event.target === modal){
         document.body.removeChild(modal);
+        this.articuloSeleccionado = null;
+      }
     });
 
     botonModificarArticulo.addEventListener('click', () => {
@@ -248,7 +250,6 @@ class PantallaModerador {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         document.body.removeChild(modal);
-        this.articuloSeleccionado = null;
       }
     });
 
@@ -264,7 +265,7 @@ class PantallaModerador {
           formData.get('nombre'),
           formData.get('descripcion') || '',
           formData.get('precio'),
-          formData.get('codigo_carta') || ''
+          formData.get('codigo-carta') || ''
         );
 
         document.body.removeChild(modal);

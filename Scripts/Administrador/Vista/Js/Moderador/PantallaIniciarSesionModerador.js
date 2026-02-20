@@ -58,6 +58,8 @@ class PantallaLogin {
 
     async manejarLogin(event) {
         event.preventDefault();
+        const id_empresa = this.obtenerIdEmpresa();
+
 
         const nombre = this.nombreInput.value;
         const contrasena = this.contrasenaInput.value;
@@ -65,11 +67,11 @@ class PantallaLogin {
         this.mensajeError.textContent = ''; // Limpiamos el mensaje de error anterior
         
         try {
-            const loginExitoso = await this.gestor.loguearModerador(nombre, contrasena);
-            console.log(loginExitoso!= null);
-            if (loginExitoso !=null) {
+            const loginExitoso = await this.gestor.loguearModerador(nombre, contrasena, id_empresa);
+            if (loginExitoso) {
                 this.mensajeError.classList.add('hidden');
-                window.location.href = +loginExitoso;
+                console.log(loginExitoso)
+                window.location.href = +id_empresa;
             } else {
                 this.mensajeError.textContent = 'Nombre de usuario o contraseña incorrectos.';
                 this.mensajeError.classList.remove('hidden');
@@ -80,6 +82,12 @@ class PantallaLogin {
             this.mensajeError.textContent = 'Ocurrió un error en el servidor. Intente de nuevo más tarde.';
             this.mensajeError.classList.remove('hidden');
         }
+    }
+
+    obtenerIdEmpresa() {
+        const url_segmentada = window.location.pathname.split('/');
+        const ultimo_slug = url_segmentada[url_segmentada.length - 1];
+        return ultimo_slug;
     }
 }
 

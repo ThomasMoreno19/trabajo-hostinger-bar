@@ -69,21 +69,23 @@ class ModeradorRepositorio {
         return $moderadores;
     }
 
-    public function obtenerPorNombre(string $nombre): ?Moderador {
+    public function obtenerPorNombre(string $nombre): ?array {
         $stmt = $this->pdo->prepare("SELECT id, id_empresa, nombre, contrasena FROM Moderador WHERE nombre = :nombre");
         $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
         $stmt->execute();
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($data) {
-            return new Moderador(
-                $data['id'],
-                $data['id_empresa'],
-                $data['nombre'],
-                $data['contrasena'] // Este ya es el hash
-            );
-        }
-        return null;
+        $moderadores = [];
+
+        foreach ($rows as $data) {
+        $moderadores[] = new Moderador(
+            $data['id'],
+            $data['id_empresa'],
+            $data['nombre'],
+            $data['contrasena']
+        );
+    }
+        return $moderadores;
     }
     
     public function crear(int $id_empresa,string $nombre, string $contrasena): array{
@@ -252,15 +254,15 @@ class ModeradorRepositorio {
         return null;
     }
     
-    public function IniciarSesion(string $nombre, string $contrasenaTextoPlano): ?int {
-        $moderador = $this->obtenerPorNombre($nombre);
+    public function IniciarSesion(string $nombre, string $contrasenaTextoPlano, int $id_empresa): bool {
+        $moderadores = $this->obtenerPorNombre($nombre);
 
-        // Si el usuario no existe o la contraseña no coincide, retorna null
-        if ($moderador) {
-            if (password_verify($contrasenaTextoPlano, $moderador->getContrasena())) {
-                return $moderador->getIdEmpresa();
+        foreach ($moderadores as $moderador) {
+            if ($moderador->getIdEmpresa() != $id_empresa && password_verify($contrasenaTextoPlano, $moderador->getContrasena())) {
+                return true;
             }
-        }
-        return null;
+        };
+        return false;
+            
     }
 }

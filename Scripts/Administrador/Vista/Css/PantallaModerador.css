@@ -186,6 +186,13 @@ h3 {
     text-align: center; 
 }
 
+#input-nombre,
+#input-codigo-carta,
+#input-descripcion,
+#input-precio {
+    width: 100%; /* Ocupa todo el espacio disponible */
+}
+
 /* Clase que controla la visibilidad y la animación */
 .hidden {
     display: none;

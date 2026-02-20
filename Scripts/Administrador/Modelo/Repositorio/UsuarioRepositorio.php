@@ -51,13 +51,9 @@ class UsuarioRepositorio {
         // Si el usuario no existe o la contraseña no coincide, retorna null
         if ($usuario) {
             
-            if (password_verify($contrasenaTextoPlano, $usuario->getContrasena())) {
-                return true;
-            } else {
-                echo "DEBUG Repositorio: password_verify() returned FALSE. Contraseña no coincide.<br>"; // <--- ¡O ESTO!
-            }
+            return password_verify($contrasenaTextoPlano, $usuario->getContrasena());
         }
-        return null;
+        return false;
     }
 
 }

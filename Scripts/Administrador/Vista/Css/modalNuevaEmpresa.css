@@ -162,7 +162,7 @@ h3{
 
 .form-group input[type="text"],
 .form-group input[type="file"],
-.form-group input[type="numeric"],
+.form-group input[type="number"],
 .form-group input[type="password"]{
   width: 40%;
   padding: 10px;

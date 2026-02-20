@@ -107,20 +107,20 @@ class ArticuloVista {
             <form id="form-modificar-articulo">
                 <h2>Modificar Artículo</h2>
                 <div class="form-group">
-                    <label>Nombre:</label>
-                    <input type="text" name="nombre" value="${this.nombre}" required>
+                    <label for="input-nombre">Nombre:</label>
+                    <input type="text" name="nombre" id="input-nombre" value="${this.nombre}" required>
                 </div>
                 <div class="form-group">
-                    <label>Código de carta:</label>
-                    <input type="text" name="codigo_carta" value="${this.codigo_carta || ''}">
+                    <label for="input-codigo-carta">Código de carta:</label>
+                    <input type="text" name="codigo-carta" id="input-codigo-carta" value="${this.codigo_carta || ''}">
                 </div>
                 <div class="form-group">
-                    <label>Descripción:</label>
-                    <input type="text" name="descripcion" value="${this.descripcion || ''}">
+                    <label for="input-descripcion">Descripción:</label>
+                    <input type="text" name="descripcion" id="input-descripcion" value="${this.descripcion || ''}">
                 </div>
                 <div class="form-group">
-                    <label>Precio:</label>
-                    <input type="text" name="precio" value="${precioSinPuntos}" required>
+                    <label for="input-precio">Precio:</label>
+                    <input type="number" name="precio" id="input-precio" value="${precioSinPuntos}" required>
                 </div>
                 <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>

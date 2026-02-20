@@ -20,7 +20,7 @@ class GestorModerador {
                 if(!isset($_SESSION['moderador_logueado'])){
                     require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.html';
                     exit;
-                } 
+                }
                 
                 if($_SESSION['id_moderador'] != (int)$primer_segmento){
                     require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.html';
@@ -245,6 +245,7 @@ class GestorModerador {
         
         $nombre = $datos['nombre'];
         $contrasena = $datos['contrasena'];
+        $id_empresa = (int)$datos['id_empresa'];
 
         if (is_null($nombre) || is_null($contrasena)) {
             http_response_code(400);
@@ -252,13 +253,13 @@ class GestorModerador {
         }
 
         try {
-            $id_empresa = $this->moderadorRepositorio->iniciarSesion($nombre, $contrasena);
-            if(!is_null($id_empresa)){
+            $response = $this->moderadorRepositorio->iniciarSesion($nombre, $contrasena, $id_empresa);
+            if($response){
                 $_SESSION['moderador_logueado'] = true;
                 $_SESSION['id_moderador'] = $id_empresa;
-                echo json_encode($id_empresa);
+                echo json_encode(true);
             }else{
-                echo json_encode(null);
+                echo json_encode(false);
             }
         } catch (Exception $e) {
             http_response_code(500);

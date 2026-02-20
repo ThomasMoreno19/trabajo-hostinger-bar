@@ -524,10 +524,7 @@ class GestorModerador {
                 throw new Error(`Error en el servidor: ${response.status}`);
             }
             
-            // El backend debe devolver un booleano (true si es exitoso, false si no)
-            const resultado = await response.json();
-            
-            return resultado; // Esto debería ser 'true' o 'false'
+            return await response.json(); // Esto debería ser 'true' o 'false'
             
         } catch (error) {
             console.error('Error en loginAdministrador:', error);
@@ -621,24 +618,27 @@ class GestorModerador {
         return await response.json();
     }
 
-    async loguearModerador(nombre, contrasena) {
+    async loguearModerador(nombre, contrasena, id_empresa) {
         try {
             const bodyData = {
             nombre: nombre,
-            contrasena: contrasena
+            contrasena: contrasena,
+            id_empresa: id_empresa
             };
-            const response = await fetch(`/moderador/login`, {
+            const responseBack = await fetch(`/moderador/login`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(bodyData),
             });
-            
+            const response = await responseBack.json();
+
             // Verifica si la respuesta HTTP es exitosa
-            if (!response.ok) {
-                this.loginAdministrador(nombre, contrasena);
+            if (!responseBack.ok || !response) {
+                console.log("enviando al metodo loguearAdministrador")
+                return this.loguearAdministrador(nombre, contrasena);
             }
             
-            return await response.json(); // Esto debería ser 'true' o 'false'
+            return await response; // Esto debería ser 'true' o 'false'
             
         } catch (error) {
             console.error('Error en loginModerador:', error);

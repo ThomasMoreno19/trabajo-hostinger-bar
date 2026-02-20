@@ -75,7 +75,7 @@ class EmpresaVista {
         <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
       </div>
         <div class="form-group">
-          <label for="nombre" class="required">Nombre</label>
+          <label for="nombre" class="required" >Nombre</label>
           <input type="text" id="nombre" name="nombre" required>
         </div>
         <div class="form-group">
@@ -134,7 +134,7 @@ class EmpresaVista {
           <input type="text" id="usuario" name="usuario" required>
         </div>
         <div class="form-group">
-          <label for="contrasena" class="required">Contrasena</label>
+          <label for="contrasena" class="required">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" required>
         </div>
         <div class="form-group">
@@ -375,7 +375,7 @@ class EmpresaVista {
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="contrasena">Contrasena</label>
+          <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
         <div class="form-group">
@@ -476,7 +476,7 @@ class EmpresaVista {
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
         </div>
         <div class="form-group">
-          <label for="contrasena">Contrasena</label>
+          <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
         <div class="form-group">
