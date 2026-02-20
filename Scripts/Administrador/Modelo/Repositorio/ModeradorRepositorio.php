@@ -254,11 +254,11 @@ class ModeradorRepositorio {
         return null;
     }
     
-    public function IniciarSesion(string $nombre, string $contrasenaTextoPlano, int $id_empresa): bool {
+    public function IniciarSesion(string $nombre, string $contrasenaTextoPlano, int $id_empresa) {
         $moderadores = $this->obtenerPorNombre($nombre);
 
         foreach ($moderadores as $moderador) {
-            if ($moderador->getIdEmpresa() != $id_empresa && password_verify($contrasenaTextoPlano, $moderador->getContrasena())) {
+            if ($moderador->getIdEmpresa() == $id_empresa && password_verify($contrasenaTextoPlano, $moderador->getContrasena())) {
                 return true;
             }
         };
