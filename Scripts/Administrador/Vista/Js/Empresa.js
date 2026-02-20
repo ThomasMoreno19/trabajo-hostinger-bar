@@ -255,7 +255,7 @@ class EmpresaVista {
 
           <div class="form-group">
             <label for="fechaNoLaboral">Fecha:</label>
-            <input type="date" id="fechaNoLaboral" name="fechaNoLaboral">
+            <input type="text" id="fechaNoLaboral" name="fechaNoLaboral" placeholder="DD/MM" inputmode="numeric" maxlength="5" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$" title="Ingresá la fecha con formato DD/MM">
           </div>
 
           <button type="button" class="boton" id="agregarDiaNoLaboral">
@@ -266,12 +266,12 @@ class EmpresaVista {
 
           <div class="form-group">
             <label for="fechaNoLaboralInicio">Desde:</label>
-            <input type="date" id="fechaNoLaboralInicio" name="fechaNoLaboralInicio">
+            <input type="text" id="fechaNoLaboralInicio" name="fechaNoLaboralInicio" placeholder="DD/MM" inputmode="numeric" maxlength="5" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$" title="Ingresá la fecha con formato DD/MM">
           </div>
 
           <div class="form-group">
             <label for="fechaNoLaboralFin">Hasta:</label>
-            <input type="date" id="fechaNoLaboralFin" name="fechaNoLaboralFin">
+            <input type="text" id="fechaNoLaboralFin" name="fechaNoLaboralFin" placeholder="DD/MM" inputmode="numeric" maxlength="5" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$" title="Ingresá la fecha con formato DD/MM">
           </div>
 
           <button type="button" class="boton" id="agregarRangoNoLaboral">

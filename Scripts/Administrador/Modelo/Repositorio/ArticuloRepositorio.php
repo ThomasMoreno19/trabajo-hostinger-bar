@@ -64,6 +64,32 @@ class ArticuloRepositorio {
         }
     }
 
+    public function obtenerTodosPorEmpresa(int $id_empresa): array {
+        try {
+            $stmt = $this->pdo->prepare(" 
+                SELECT
+                    id,
+                    id_rubro,
+                    id_empresa,
+                    nombre,
+                    descripcion,
+                    precio,
+                    codigo_carta
+                FROM Articulo
+                WHERE id_empresa = :id_empresa
+                ORDER BY id_rubro ASC, nombre ASC
+            ");
+
+            $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error al obtener artículos por empresa: " . $e->getMessage());
+            return [];
+        }
+    }
+
     public function crearPorCsv(int $id, int $id_rubro, int $id_empresa,string $nombre,float $precio, string $codigo_carta = '', string $descripcion = '', ?string $logo_url = 'Archivos/Logos/Vacio.png'): array {
         try {
             $stmt = $this->pdo->prepare(

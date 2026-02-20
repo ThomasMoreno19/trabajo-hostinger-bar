@@ -137,6 +137,16 @@ class PantallaCliente {
           this.todosLosRubros.push(rubroBoton);
         });
 
+        const articulosRecibidos = await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
+        const articulosPorRubro = articulosRecibidos.reduce((acc, articulo) => {
+          const idRubro = String(articulo.id_rubro);
+          if (!acc[idRubro]) {
+            acc[idRubro] = [];
+          }
+          acc[idRubro].push(articulo);
+          return acc;
+        }, {});
+
         // 2. Generar la lista de artículos agrupados por rubro
         for (const rubro of rubrosRecibidos) {
           const id_rubro = rubro['id'];
@@ -147,8 +157,8 @@ class PantallaCliente {
           containerRubro.classList.add('hidden');
           containerRubro.dataset.rubroId = id_rubro; // Asignar el ID del rubro para filtrar
           
-          // Obtener la lista de artículos para el rubro actual
-          const listaArticulosRecibidos = await this.gestor.mostrarListaArticulos(id_rubro, this.empresa.id);
+          // Obtener la lista de artículos para el rubro actual (ya cargada en bloque)
+          const listaArticulosRecibidos = articulosPorRubro[String(id_rubro)] || [];
           
           const listaArticulosDiv = document.createElement('div');
           listaArticulosDiv.classList.add('lista-articulos-rubro');

@@ -45,6 +45,16 @@ class GestorCliente {
             id_empresa
         );
     }
+
+    async mostrarListaArticulosPorEmpresa(id_empresa) {
+        return await this.cacheFetch(
+            `/articulo/mostrar/empresa`,
+            { id_empresa },
+            'articulos_empresa',
+            600,
+            id_empresa
+        );
+    }
     
     async mostrarListaRubros(id_empresa) {
         return await this.cacheFetch(

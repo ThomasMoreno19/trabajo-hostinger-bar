@@ -39,6 +39,10 @@ class GestorArticulo {
                         $this->mostrarRubro();
                         break;
 
+                    case 'empresa':
+                        $this->mostrarTodosPorEmpresa();
+                        break;
+
                     default:
                         if (is_numeric($url_segmentada[1])) {
                             $this->obtenerPorId();
@@ -127,6 +131,43 @@ class GestorArticulo {
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Error al mostrar los rubros: ' . $e->getMessage()]);
+        }
+    }
+
+    private function mostrarTodosPorEmpresa(): void {
+        $datos = json_decode(file_get_contents('php://input'), true);
+
+        $id_empresa = (int)($datos['id_empresa'] ?? 0);
+        if ($id_empresa <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Falta id_empresa para mostrar los artículos.']);
+            return;
+        }
+
+        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_empresa_{$id_empresa}.json";
+
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
+            http_response_code(200);
+            echo file_get_contents($cacheFile);
+            return;
+        }
+
+        try {
+            $listaArticulos = $this->articuloRepositorio->obtenerTodosPorEmpresa($id_empresa);
+
+            foreach ($listaArticulos as &$articulo) {
+                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
+            }
+            unset($articulo);
+
+            $json = json_encode($listaArticulos);
+            file_put_contents($cacheFile, $json);
+
+            http_response_code(200);
+            echo $json;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al mostrar artículos por empresa: ' . $e->getMessage()]);
         }
     }
     
@@ -220,6 +261,11 @@ class GestorArticulo {
                 @unlink($archivo); // el @ evita warnings si ya fue borrado
             }
         }
+
+        $cacheEmpresa = $cacheDir . "articulos_empresa_{$id_empresa}.json";
+        if (file_exists($cacheEmpresa)) {
+            @unlink($cacheEmpresa);
+        }
     }
     
     private function borrarCacheDeUnRubro(int $id_rubro): void {
@@ -234,6 +280,16 @@ class GestorArticulo {
         foreach ($archivos as $archivo) {
             if (file_exists($archivo)) {
                 @unlink($archivo);
+            }
+        }
+
+        $cacheEmpresaPattern = $cacheDir . "articulos_empresa_*.json";
+        $cacheEmpresaArchivos = glob($cacheEmpresaPattern);
+        if ($cacheEmpresaArchivos) {
+            foreach ($cacheEmpresaArchivos as $archivoEmpresa) {
+                if (file_exists($archivoEmpresa)) {
+                    @unlink($archivoEmpresa);
+                }
             }
         }
     }
