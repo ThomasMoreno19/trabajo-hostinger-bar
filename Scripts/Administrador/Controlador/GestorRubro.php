@@ -69,6 +69,10 @@ class GestorRubro
         $this->eliminarVideo();
         break;
 
+      case 'eliminar':
+        $this->eliminar();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Rubro.']);
@@ -382,6 +386,33 @@ class GestorRubro
       http_response_code(500);
       echo json_encode(['error' => 'Error al eliminar el video.']);
       return;
+    }
+  }
+
+  private function eliminar(): void
+  {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = (int)$input['id'];
+    $id_empresa = (int)$input['id_empresa'];
+
+    if ($id <= 0 || $id_empresa <= 0) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos válidos para eliminar el rubro con el id recibido']);
+      return;
+    }
+
+    try {
+      $exito = $this->rubroRepositorio->eliminar($id, $id_empresa);
+      if ($exito) {
+        $this->borrarCacheTodos($id_empresa);
+        echo json_encode(['success' => true]);
+      } else {
+        http_response_code(404);
+        echo json_encode(['error' => 'No se encontró el rubro para eliminar.']);
+      }
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar el rubro: ' . $e->getMessage()]);
     }
   }
 }

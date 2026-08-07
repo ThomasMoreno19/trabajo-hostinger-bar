@@ -62,6 +62,10 @@ class GestorArticulo
         $this->eliminarVideo();
         break;
 
+      case 'eliminar':
+        $this->eliminar();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Articulo.']);
@@ -418,6 +422,28 @@ class GestorArticulo
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al modificar el articulo: ' . $e->getMessage()]);
+    }
+  }
+
+  private function eliminar(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id = $datos['id'];
+    $id_empresa = $datos['id_empresa'];
+    try {
+      $eliminado = $this->articuloRepositorio->eliminar($id, $id_empresa);
+      if ($eliminado) {
+        $this->borrarCacheTodos($id_empresa);
+        http_response_code(200);
+        echo json_encode(['success' => true]);
+      } else {
+        http_response_code(404);
+        echo json_encode(['error' => 'Artículo no encontrado o ya eliminado.']);
+      }
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar el artículo: ' . $e->getMessage()]);
     }
   }
 }

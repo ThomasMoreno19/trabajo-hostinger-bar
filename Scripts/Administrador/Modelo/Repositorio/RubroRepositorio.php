@@ -269,4 +269,20 @@ class RubroRepositorio
     }
     return false;
   }
+
+  public function eliminar(int $id, int $id_empresa): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "DELETE FROM rubro WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al eliminar rubro: " . $e->getMessage());
+      return false;
+    }
+  }
 }

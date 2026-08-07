@@ -16,7 +16,7 @@ class RubroVista {
   mostrarUno(paraCliente = false) {
     const divRubro = document.createElement("div");
     divRubro.classList.add("rubro");
-    divRubro.dataset.RubroId = this.id; //🤣😎
+    divRubro.dataset.RubroId = this.id;
     divRubro.style.backgroundImage = `url(${this.logo_url})`;
 
     const pNombre = document.createElement("h3");
@@ -64,40 +64,6 @@ class RubroVista {
     return divRubro;
   }
 
-  modalConfigurar() {
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-    modal.id = "modal-configurar-rubro";
-
-    const modalContenido = document.createElement("div");
-    modalContenido.classList.add("modal-content-partial");
-
-    const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : "";
-
-    const htmlContent = `
-    <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
-    <form id="form-configurar-rubro">
-      <h2 id="nombre-articulo-modal">${this.nombre}</h2>
-      <button type="button" class="submit-button" id="modificar">Modificar</button>
-      <button type="button" class="submit-button" id="boton-subir-video-rubro">Subir video/imagen</button>
-    </form>`;
-
-    modalContenido.innerHTML = htmlContent;
-
-    modal.appendChild(modalContenido);
-
-    const closeBtn = modal.querySelector(".close-modal-btn");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Evita que interfieran otros listeners del modal
-        modal.remove();
-      });
-    }
-
-    return modal;
-  }
-
   modalModificar(nombre) {
     const modalModificar = document.createElement("div");
     modalModificar.classList.add("modal");
@@ -107,6 +73,7 @@ class RubroVista {
     modalModificarContenido.classList.add("modal-content-partial");
 
     const htmlContent = `
+    <span class="boton-eliminar" id="eliminar-rubro">Eliminar</span>
     <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-rubro" method="POST" enctype="multipart/form-data"> 
                 <h2 id ="titulo-modal">Modificar Rubro</h2> 
@@ -118,6 +85,7 @@ class RubroVista {
                     <label for="nombre">Imagen:</label> 
                     <input type="file" id="imagen" name="imagen" accept="image/*"> 
                 </div> 
+                <button type="button" class="submit-button" id="boton-subir-video-rubro">Subir video</button>
                 <button type="submit" class="submit-button" id="boton-modificar-rubro">Enviar</button> 
             </form> `;
     modalModificarContenido.innerHTML = htmlContent;

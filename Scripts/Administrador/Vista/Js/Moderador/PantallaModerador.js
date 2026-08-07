@@ -33,9 +33,9 @@ class PantallaModerador {
     this.tituloPagina = document.getElementById("titulo-pagina");
     this.loader = document.getElementById("loader");
     window.gestorDeArticulosCallback = (articulo) =>
-      this.modalArticuloSeleccionado(articulo);
+      this.abrirModalModificarArticulo(articulo);
     window.gestorDeRubrosCallback = (rubro) => {
-      this.modalRubroSeleccionado(rubro);
+      this.modalRubroModificar(rubro);
     };
 
     this.agregarEventListeners();
@@ -277,50 +277,6 @@ class PantallaModerador {
     }
   }
 
-  async modalArticuloSeleccionado(articulo) {
-    if (this.empresa.deshabilitarExcel) return;
-    const modal = articulo.modalConfigurar();
-    this.articuloSeleccionado = articulo;
-    // Agregamos un ID al modal para poder identificarlo
-    document.body.appendChild(modal);
-
-    const botonSubirVideoArticulo = document.getElementById(
-      "boton-subir-video-articulo",
-    );
-    const botonModificarArticulo = document.getElementById("modificar");
-
-    this.clickFuera(modal);
-
-    botonSubirVideoArticulo.addEventListener("click", () => {
-      this.abrirModalSubirVideoArticulo(articulo);
-    });
-
-    botonModificarArticulo.addEventListener("click", () => {
-      this.abrirModalModificarArticulo(modal);
-    });
-  }
-
-  async modalRubroSeleccionado(rubro) {
-    if (this.empresa.deshabilitarExcel) return;
-    const modal = rubro.modalConfigurar();
-    this.rubroSeleccionado = rubro;
-    // Agregamos un ID al modal para poder identificarlo
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const botonModificar = document.getElementById("modificar");
-    const botonSubirVideo = document.getElementById("boton-subir-video-rubro");
-
-    botonModificar.addEventListener("click", () => {
-      this.modalRubroModificar(rubro);
-    });
-
-    botonSubirVideo.addEventListener("click", () => {
-      this.abrirModalSubirVideoRubro(rubro);
-    });
-  }
-
   async modalRubroModificar(rubro) {
     if (this.empresa.deshabilitarExcel) return;
     const Rubro = new RubroVista(rubro);
@@ -330,6 +286,18 @@ class PantallaModerador {
     document.body.appendChild(modal);
 
     this.clickFuera(modal);
+
+    const botonSubirVideo = document.getElementById("boton-subir-video-rubro");
+    botonSubirVideo.addEventListener("click", () => {
+      this.abrirModalSubirVideoRubro(rubro);
+      document.body.removeChild(modal);
+    });
+
+    const botonEliminar = document.getElementById("eliminar-rubro");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(rubro, "rubro");
+      document.body.removeChild(modal);
+    });
 
     const form = document.getElementById("form-modificar-rubro");
     const botonEnviarDatos = document.getElementById("boton-modificar-rubro");
@@ -369,17 +337,29 @@ class PantallaModerador {
     });
   }
 
-  abrirModalModificarArticulo(modalPadre) {
-    const articulo = this.articuloSeleccionado;
+  abrirModalModificarArticulo(articulo) {
     if (!articulo) return;
-    const padre = modalPadre;
-    const modal = this.articuloSeleccionado.modalModificar();
+    const modal = articulo.modalModificar();
     document.body.appendChild(modal);
 
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         document.body.removeChild(modal);
       }
+    });
+
+    const botonEliminar = document.getElementById("eliminar-articulo");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(articulo, "articulo");
+      document.body.removeChild(modal);
+    });
+
+    const botonSubirVideo = document.getElementById(
+      "boton-subir-video-articulo",
+    );
+    botonSubirVideo.addEventListener("click", () => {
+      this.abrirModalSubirVideoArticulo(articulo);
+      document.body.removeChild(modal);
     });
 
     const form = modal.querySelector("#form-modificar-articulo");
@@ -401,13 +381,33 @@ class PantallaModerador {
         );
 
         document.body.removeChild(modal);
-        document.body.removeChild(padre);
-        this.articuloSeleccionado = null;
         await this.habilitarVentanaPrincipal();
       } catch (error) {
         alert("Error al modificar: " + error.message);
       }
     });
+  }
+
+  async confirmarEliminar(entidad, tipo) {
+    if (
+      confirm(
+        "Seguro que desea eliminar?",
+        tipo === "articulo"
+          ? ""
+          : "Se eliminarán todos los artículos asociados.",
+      )
+    ) {
+      const respuesta = await this.gestor.eliminarEntidad(
+        entidad.id,
+        tipo,
+        this.empresa.id,
+      );
+
+      if (respuesta?.success) {
+        await this.mostrarLista(this.listaArticulos);
+        this.botonListaArticulos.click();
+      }
+    }
   }
 
   abrirModalCargarArticulos() {

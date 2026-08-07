@@ -63,6 +63,16 @@ class GestorModerador {
     }
   }
 
+  async eliminarEntidad(id, tipo, id_empresa) {
+    const bodyData = { id };
+
+    return await this.llamadaAlBackend(
+      `/${tipo}/eliminar`,
+      bodyData,
+      id_empresa,
+    );
+  }
+
   async subirImagen(archivoImagen, logo_url) {
     if (!archivoImagen) {
       return logo_url;

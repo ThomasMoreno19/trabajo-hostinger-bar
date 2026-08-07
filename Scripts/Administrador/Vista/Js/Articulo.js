@@ -117,45 +117,6 @@ class ArticuloVista {
     return divArticulo;
   }
 
-  modalConfigurar() {
-    const modalConfigurarArticulo = document.createElement("div");
-    modalConfigurarArticulo.classList.add("modal");
-    modalConfigurarArticulo.id = "modal-configurar-articulo";
-
-    const modalContenido = document.createElement("div");
-    modalContenido.classList.add("modal-content-partial");
-
-    const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : "";
-
-    const htmlContent = `
-    <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
-            <form id="form-configurar-articulo">
-                <h2 id="nombre-articulo-modal">${this.nombre}${codigoCartaTexto}</h2>
-                <h2 id="id-articulo">Precio 1: $${this.precio1}</h2>
-                <h2 id="id-articulo2">Precio 2: $${this.precio2}</h2>
-                <h2 id="id-articulo3">Precio 3: $${this.precio3}</h2>
-                <button type="button" class="submit-button" id="modificar">Modificar</button>
-                <button type="button" class="submit-button" id="boton-subir-video-articulo">Subir video/imagen</button>
-            </form>`;
-
-    const modal = document.getElementById("modal-configurar-articulo");
-
-    modalContenido.innerHTML = htmlContent;
-    modalConfigurarArticulo.appendChild(modalContenido);
-
-    const closeBtn = modalConfigurarArticulo.querySelector(".close-modal-btn");
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        modalConfigurarArticulo.remove();
-      });
-    }
-
-    return modalConfigurarArticulo;
-  }
-
   modalModificar() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -170,6 +131,7 @@ class ArticuloVista {
     const precioSinPuntos3 = this.sacarPuntosPrecio(this.precio3);
 
     contenido.innerHTML = `
+    <span class="boton-eliminar" id="eliminar-articulo">Eliminar</span>
     <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-articulo">
                 <h2>Modificar Artículo</h2>
@@ -197,6 +159,7 @@ class ArticuloVista {
                     <label for="input-precio3">Precio 3:</label>
                     <input type="number" name="precio3" id="input-precio3" value="${precioSinPuntos3}" required>
                 </div>
+                <button type="button" class="submit-button" id="boton-subir-video-articulo">Subir video</button>
                 <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>
         `;
