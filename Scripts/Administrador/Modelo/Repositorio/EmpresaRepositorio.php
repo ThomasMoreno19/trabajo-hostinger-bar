@@ -33,6 +33,7 @@ class EmpresaRepositorio
         'ubicacion' => $data['ubicacion'],
         'tieneCarrito' => $data['tieneCarrito'],
         'moduloMesero' => $data['moduloMesero'],
+        'unicoPrecio' => (bool)$data['unicoPrecio'],
         'deshabilitarExcel' => $data['deshabilitar_excel'],
         'efectivo' => $data['efectivo'],
         'tarjeta' => $data['tarjeta'],
@@ -64,6 +65,7 @@ class EmpresaRepositorio
           'ubicacion' => $data['ubicacion'],
           'tieneCarrito' => $data['tieneCarrito'],
           'moduloMesero' => $data['moduloMesero'],
+          'unicoPrecio' => (bool)$data['unicoPrecio'],
           'deshabilitarExcel' => $data['deshabilitar_excel'],
           'efectivo' => $data['efectivo'],
           'tarjeta' => $data['tarjeta'],
@@ -132,7 +134,7 @@ class EmpresaRepositorio
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_delivery, int $precio_espectaculo, bool $botonPedirCuenta, bool $botonLlamarMesero, ?string $contrasenaMesero = null): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_delivery, int $precio_espectaculo, bool $botonPedirCuenta, bool $botonLlamarMesero, bool $unicoPrecio, ?string $contrasenaMesero = null): bool
   {
     try {
       $sql = "UPDATE Empresa
@@ -145,7 +147,8 @@ class EmpresaRepositorio
           precio_delivery = :precio_delivery,
           precio_espectaculo = :precio_espectaculo,
           botonPedirCuenta = :botonPedirCuenta,
-          botonLlamarMesero = :botonLlamarMesero";
+          botonLlamarMesero = :botonLlamarMesero,
+          unicoPrecio = :unicoPrecio";
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $sql .= ", contrasenaMesero = :contrasenaMesero";
@@ -166,6 +169,7 @@ class EmpresaRepositorio
       $stmt->bindParam(':precio_espectaculo', $precio_espectaculo, PDO::PARAM_INT);
       $stmt->bindParam(':botonPedirCuenta', $botonPedirCuenta, PDO::PARAM_BOOL);
       $stmt->bindParam(':botonLlamarMesero', $botonLlamarMesero, PDO::PARAM_BOOL);
+      $stmt->bindParam(':unicoPrecio', $unicoPrecio, PDO::PARAM_BOOL);
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $contrasenaMeseroHash = password_hash($contrasenaMesero, PASSWORD_DEFAULT);
         $stmt->bindParam(':contrasenaMesero', $contrasenaMeseroHash, PDO::PARAM_STR);
@@ -211,8 +215,8 @@ class EmpresaRepositorio
       $fecha_actual = date('Y-m-d');
       $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, precio_delivery, precio_espectaculo, contrasenaMesero) 
-        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, 1, 1, :contrasenaMesero)"
+        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, unicoPrecio, deshabilitar_excel, efectivo, tarjeta, transferencia, precio_delivery, precio_espectaculo, contrasenaMesero)
+        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, 1, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, 1, 1, :contrasenaMesero)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -250,6 +254,7 @@ class EmpresaRepositorio
           'ubicacion' => $data['ubicacion'],
           'tieneCarrito' => $data['tieneCarrito'],
           'moduloMesero' => $data['moduloMesero'],
+          'unicoPrecio' => (bool)$data['unicoPrecio'],
           'deshabilitar_excel' => $data['deshabilitar_excel'],
           'efectivo' => $data['efectivo'],
           'tarjeta' => $data['tarjeta'],

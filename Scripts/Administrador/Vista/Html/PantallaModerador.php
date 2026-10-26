@@ -21,7 +21,7 @@
     <h1 id="titulo-pagina"></h1>
   </header>
 
-  <div class="boton-carga csv">
+  <div class="boton-carga">
     <button class="boton-cargar" type="button" id="boton-cargar-articulos">
       <img src="../../../../Archivos/Iconos/excel.svg" alt="Cargar" width="28" height="28">
       Cargar Artículos

@@ -7,6 +7,10 @@ class EmpresaVista {
     this.tieneCarrito = empresa.tieneCarrito ?? false;
     this.moduloMesero = empresa.moduloMesero ?? false;
     this.deshabilitarExcel = empresa.deshabilitarExcel ?? false;
+    this.unicoPrecio =
+      empresa.unicoPrecio == null
+        ? true
+        : [true, 1, "1", "true"].includes(empresa.unicoPrecio);
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
@@ -29,6 +33,7 @@ class EmpresaVista {
     precio_espectaculo,
     botonPedirCuenta,
     botonLlamarMesero,
+    unicoPrecio = this.unicoPrecio,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -40,6 +45,7 @@ class EmpresaVista {
     this.precio_espectaculo = precio_espectaculo;
     this.botonPedirCuenta = botonPedirCuenta;
     this.botonLlamarMesero = botonLlamarMesero;
+    this.unicoPrecio = unicoPrecio;
   }
 
   mostrarUna() {
@@ -61,6 +67,7 @@ class EmpresaVista {
           empresaUbicacion: this.ubicacion,
           empresaTieneCarrito: this.tieneCarrito,
           empresaModuloMesero: this.moduloMesero,
+          empresaUnicoPrecio: this.unicoPrecio,
           empresaDeshabilitarExcel: this.deshabilitarExcel,
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
@@ -572,7 +579,7 @@ class EmpresaVista {
         <div class="form-group">
           <label for="archivo">Seleccionar archivo Excel:</label>
           <input type="file" id="archivo" name="archivo"
-            accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
             required>
         </div>
         <div >
@@ -883,6 +890,13 @@ class EmpresaVista {
             class="toggle-btn ${this.botonLlamarMesero ? "active" : ""}">
             Llamar mesero
           </button>
+
+          <button
+            type="button"
+            id="btnUnicoPrecio"
+            class="toggle-btn ${this.unicoPrecio ? "active" : ""}">
+            Único precio
+          </button>
         </div>
 
         <input
@@ -896,6 +910,12 @@ class EmpresaVista {
           name="llamarMesero"
           id="llamarMesero"
           value="${!!this.botonLlamarMesero}">
+
+        <input
+          type="hidden"
+          name="unicoPrecio"
+          id="unicoPrecio"
+          value="${this.unicoPrecio}">
         
         <div class="form-group">
           <label for="imagen">Imagen</label>

@@ -92,9 +92,14 @@ class PantallaModerador {
       <div class="exito-error-container">
         <img src="../../../../Archivos/Iconos/error.svg" alt="Error Icon" class="icon" id="error-icon" height="50" width="50"/>
         <h2 id="error-title">¡Algo ha salido mal!</h2>
-        <p>${mensaje}</p>
+        <p id="error-message"></p>
       </div>
     `;
+    const texto =
+      mensaje instanceof Error
+        ? mensaje.message
+        : String(mensaje ?? "No se pudo completar la operación. Volvé a intentarlo.");
+    modalPadre.querySelector("#error-message").textContent = texto;
   }
 
   mensajeExitoso(modalPadre, mensaje) {
@@ -422,14 +427,19 @@ class PantallaModerador {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const archivoInput = document.getElementById("archivo");
-      const archivo = archivoInput.files[0];
+      const archivo = archivoInput?.files?.[0];
 
       try {
+        if (!archivo) {
+          throw new Error("Seleccioná un archivo Excel .xlsx o .xls antes de continuar.");
+        }
+
         // Envía la lista procesada al controlador
         this.insertarLoader(modalContent);
-        const respuesta = await this.gestor.cargarArticulosYRubros(
+        await this.gestor.cargarArticulosYRubros(
           archivo,
           this.empresa.id,
+          this.empresa.unicoPrecio,
         );
 
         this.mensajeExitoso(modalContent, "Artículos cargados exitosamente.");
@@ -442,8 +452,14 @@ class PantallaModerador {
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
-        if (error.value == "Error al procesar el archivo:")
-          this.mensajeError(modalContent, error);
+        console.error("Error al cargar artículos desde el archivo:", error);
+        this.loader?.classList.add("hidden");
+        const detalle =
+          error?.message || "No se pudo completar la carga de artículos.";
+        this.mensajeError(
+          modalContent,
+          detalle,
+        );
       }
     });
   }
@@ -465,8 +481,8 @@ class PantallaModerador {
               <p>Arrastrá tu archivo aquí o hacé click</p>
             </div>
 
-            <input type="file" id="archivo" name="archivo"
-              accept=".csv,.xlsx,.xls" hidden required>
+          <input type="file" id="archivo" name="archivo"
+              accept=".xlsx,.xls" hidden required>
           </div>
 
           <div id="file-preview" class="file-preview hidden"></div>
@@ -481,7 +497,7 @@ class PantallaModerador {
     const preview = modal.querySelector("#file-preview");
 
     function accionBotonCargar(estado) {
-      const boton = document.querySelector("#boton-cargar");
+      const boton = modal.querySelector("#boton-cargar");
 
       if (!boton) return;
 
@@ -527,14 +543,9 @@ class PantallaModerador {
     function mostrarArchivo(file) {
       if (!file) return;
 
-      const validTypes = [
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      ];
-
       const validExtensions = /\.(xls|xlsx)$/i;
 
-      if (!validTypes.includes(file.type) && !validExtensions.test(file.name)) {
+      if (!validExtensions.test(file.name)) {
         preview.classList.remove("hidden");
         preview.innerHTML =
           "<strong>❌ Archivo inválido. Solo se permiten .xls o .xlsx</strong>";
@@ -547,12 +558,13 @@ class PantallaModerador {
       preview.classList.remove("hidden");
       preview.innerHTML = `
       <div class="file-info">
-        <strong>${file.name}</strong>
+          <strong></strong>
         <strong>
           ${(file.size / 1024).toFixed(2)} KB
         </strong>
       </div>
       `;
+      preview.querySelector("strong").textContent = file.name;
       accionBotonCargar(true);
     }
 
@@ -677,6 +689,10 @@ class PantallaModerador {
         if (btn.id === "btnLlamarMesero") {
           document.getElementById("llamarMesero").value = activo;
         }
+
+        if (btn.id === "btnUnicoPrecio") {
+          document.getElementById("unicoPrecio").value = activo;
+        }
       });
     });
 
@@ -712,6 +728,7 @@ class PantallaModerador {
       const precio_espectaculo = formData.get("precio-espectaculo");
       const botonPedirCuenta = formData.get("pedirCuenta") === "true";
       const botonLlamarMesero = formData.get("llamarMesero") === "true";
+      const unicoPrecio = formData.get("unicoPrecio") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaMesero = formData.get("contrasenaMesero");
@@ -733,6 +750,7 @@ class PantallaModerador {
           botonPedirCuenta,
           botonLlamarMesero,
           contrasenaMesero,
+          unicoPrecio,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -755,6 +773,7 @@ class PantallaModerador {
           parseInt(precio_espectaculo),
           botonPedirCuenta,
           botonLlamarMesero,
+          unicoPrecio,
         );
         this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");

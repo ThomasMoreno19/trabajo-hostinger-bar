@@ -181,6 +181,7 @@ class GestorEmpresa
         'ubicacion' => $empresa['ubicacion'],
         'tieneCarrito' => $empresa['tieneCarrito'],
         'moduloMesero' => $empresa['moduloMesero'],
+        'unicoPrecio' => $empresa['unicoPrecio'],
         'deshabilitar_excel' => $empresa['deshabilitar_excel'],
         'efectivo' => $empresa['efectivo'],
         'tarjeta' => $empresa['tarjeta'],
@@ -262,6 +263,7 @@ class GestorEmpresa
     $precio_espectaculo = $datos['precio_espectaculo'];
     $botonPedirCuenta = $datos['botonPedirCuenta'];
     $botonLlamarMesero = $datos['botonLlamarMesero'];
+    $unicoPrecio = filter_var($datos['unicoPrecio'] ?? true, FILTER_VALIDATE_BOOLEAN);
     $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
@@ -272,7 +274,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $botonPedirCuenta, $botonLlamarMesero, $contrasenaMesero);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $botonPedirCuenta, $botonLlamarMesero, $unicoPrecio, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

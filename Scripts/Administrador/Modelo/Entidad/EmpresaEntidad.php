@@ -10,12 +10,13 @@ class Empresa
   private string $ubicacion;
   private bool $tieneCarrito;
   private bool $moduloMesero;
+  private bool $unicoPrecio;
   private array $rubros;
   private bool $tieneContrasenaMesero;
 
 
   //Constructor
-  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $tieneContrasenaMesero, ?array $rubros = [])
+  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $tieneContrasenaMesero, ?array $rubros = [], bool $unicoPrecio = true)
   {
     $this->id = $id;
     $this->nombre = $nombre;
@@ -25,6 +26,7 @@ class Empresa
     $this->ubicacion = $ubicacion;
     $this->tieneCarrito = $tieneCarrito;
     $this->moduloMesero = $moduloMesero;
+    $this->unicoPrecio = $unicoPrecio;
     $this->tieneContrasenaMesero = $tieneContrasenaMesero;
     $this->rubros = $rubros;
   }
@@ -69,6 +71,11 @@ class Empresa
   public function getmoduloMesero(): bool
   {
     return $this->moduloMesero;
+  }
+
+  public function getUnicoPrecio(): bool
+  {
+    return $this->unicoPrecio;
   }
 
   public function getRubros(): array
@@ -126,6 +133,11 @@ class Empresa
   public function setmoduloMesero(bool $moduloMesero): void
   {
     $this->moduloMesero = $moduloMesero;
+  }
+
+  public function setUnicoPrecio(bool $unicoPrecio): void
+  {
+    $this->unicoPrecio = $unicoPrecio;
   }
 
   public function agregarRubro(Rubro $rubro): void

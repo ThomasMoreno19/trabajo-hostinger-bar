@@ -139,101 +139,241 @@ class GestorModerador {
     }
   }
 
-  async cargarArticulosYRubros(archivo, id_empresa) {
+  async cargarArticulosYRubros(archivo, id_empresa, unicoPrecio = true) {
+    if (!archivo) {
+      throw new Error("Seleccioná un archivo Excel antes de continuar.");
+    }
+
+    const nombreArchivo = archivo.name || "archivo seleccionado";
+    const esExcel = /\.(xlsx|xls)$/i.test(nombreArchivo);
+
+    if (!esExcel) {
+      throw new Error(
+        "El formato del archivo no es compatible. Seleccioná un archivo Excel .xlsx o .xls.",
+      );
+    }
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
       reader.onload = async (event) => {
+        let listaObjetos;
+
         try {
-          const listaObjetos = [];
-
-          if (archivo.type === "text/csv") {
-            const contenido = event.target.result;
-            const lineas = contenido.split("\n");
-            const lineasSinCabecera = lineas.slice(2);
-
-            lineasSinCabecera.forEach((linea) => {
-              const columnas = linea.split(";");
-              if (columnas.length >= 4) {
-                listaObjetos.push({
-                  id_articulo: columnas[0],
-                  nombre_articulo: columnas[1].trim(),
-                  descripcion: this.limpiarDescripcion(
-                    columnas[6]?.toString().trim() || "",
-                  ),
-                  precio1: parseFloat(columnas[2].trim()),
-                  precio2: parseFloat(columnas[3].trim()),
-                  precio3: parseFloat(columnas[4].trim()),
-                  codigo_carta_articulo: "",
-                  nombre_rubro: columnas[5].trim(),
-                  publica_art: columnas[7].trim(),
-                  publica_rub: columnas[8].trim(),
-                  no_procesado: columnas[9].trim(),
-                });
-              }
-            });
-          } else {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-            const lineasSinCabecera = jsonData.slice(2);
-
-            lineasSinCabecera.forEach((columnas) => {
-              if (!columnas || columnas.length === 0) return;
-
-              listaObjetos.push({
-                id_articulo: columnas[0],
-                nombre_articulo: columnas[1].trim(),
-                descripcion: this.limpiarDescripcion(
-                  columnas[6]?.toString().trim() || "",
-                ),
-                precio1: parseFloat(columnas[2]),
-                precio2: parseFloat(columnas[3]),
-                precio3: parseFloat(columnas[4]),
-                codigo_carta_articulo: "",
-                nombre_rubro: columnas[5].trim(),
-                publica_art: columnas[7],
-                publica_rub: columnas[8],
-                no_procesado: columnas[9],
-              });
-            });
+          if (typeof XLSX === "undefined") {
+            throw new Error(
+              "No se pudo abrir el Excel porque no está disponible el lector de archivos. Recargá la página e intentá nuevamente.",
+            );
           }
 
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            throw new Error("El archivo Excel no contiene ninguna hoja.");
+          }
+
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          if (!sheet) {
+            throw new Error("No se pudo leer la primera hoja del Excel.");
+          }
+
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          const filas = jsonData.slice(2);
+          listaObjetos = [];
+          filas.forEach((columnas, indice) => {
+            if (!Array.isArray(columnas)) return;
+
+            const tieneDatos = columnas.some(
+              (valor) => valor !== null && String(valor).trim() !== "",
+            );
+            if (!tieneDatos) return;
+
+            const numeroFila = indice + 3;
+            const tieneColumnasExtras = columnas
+              .slice(8)
+              .some(
+                (valor) => valor !== null && String(valor ?? "").trim() !== "",
+              );
+            const esImporteNumerico = (valor) =>
+              valor !== null &&
+              String(valor ?? "").trim() !== "" &&
+              Number.isFinite(parseFloat(String(valor).trim()));
+            const contieneTresImportes =
+              esImporteNumerico(columnas[2]) &&
+              esImporteNumerico(columnas[3]) &&
+              esImporteNumerico(columnas[4]) &&
+              String(columnas[5] ?? "").trim() !== "";
+            const pareceFormatoUnSoloImporte =
+              esImporteNumerico(columnas[2]) &&
+              !esImporteNumerico(columnas[3]) &&
+              String(columnas[3] ?? "").trim() !== "";
+
+            if (unicoPrecio && (tieneColumnasExtras || contieneTresImportes)) {
+              throw new Error(
+                `Formato incorrecto en la fila ${numeroFila}: se encontró más de un importe en el Excel. Para cargar artículos con más de un importe, desactivá la funcionalidad «Único precio».`,
+              );
+            }
+
+            if (!unicoPrecio && pareceFormatoUnSoloImporte) {
+              throw new Error(
+                `Formato incorrecto en la fila ${numeroFila}: esta empresa espera tres importes. Usá el Excel con precio 1, precio 2 y precio 3, o pedí al moderador que active “Único precio”.`,
+              );
+            }
+
+            const indiceRubro = unicoPrecio ? 3 : 5;
+            const columnasObligatorias = unicoPrecio
+              ? [
+                  [0, "ID del artículo"],
+                  [1, "nombre del artículo"],
+                  [2, "importe"],
+                  [3, "rubro"],
+                ]
+              : [
+                  [0, "ID del artículo"],
+                  [1, "nombre del artículo"],
+                  [2, "precio 1"],
+                  [3, "precio 2"],
+                  [4, "precio 3"],
+                  [5, "rubro"],
+                ];
+
+            if (columnas.length <= indiceRubro) {
+              throw new Error(
+                `Formato incorrecto en la fila ${numeroFila}: faltan columnas obligatorias. La plantilla debe tener ID, nombre, ${unicoPrecio ? "un importe y rubro en las columnas A a D" : "tres precios y rubro en las columnas A a F"}.`,
+              );
+            }
+
+            for (const [indiceColumna, nombreColumna] of columnasObligatorias) {
+              const valor = columnas[indiceColumna];
+              if (valor === null || String(valor ?? "").trim() === "") {
+                throw new Error(
+                  `Formato incorrecto en la fila ${numeroFila}: falta ${nombreColumna}. Completá ese dato y volvé a cargar el archivo.`,
+                );
+              }
+            }
+
+            const indicesPrecios = unicoPrecio ? [2] : [2, 3, 4];
+            const preciosLeidos = indicesPrecios.map((indicePrecio) =>
+              parseFloat(String(columnas[indicePrecio]).trim()),
+            );
+            const precioInvalido = preciosLeidos.findIndex(
+              (precio) => !Number.isFinite(precio),
+            );
+            if (precioInvalido !== -1) {
+              throw new Error(
+                `Formato incorrecto en la fila ${numeroFila}: ${unicoPrecio ? "el importe" : `el precio ${precioInvalido + 1}`} no es un número válido. Ingresá un valor numérico y volvé a cargar el archivo.`,
+              );
+            }
+
+            const precios = unicoPrecio
+              ? [preciosLeidos[0], preciosLeidos[0], preciosLeidos[0]]
+              : preciosLeidos;
+            const indiceDescripcion = unicoPrecio ? 4 : 6;
+            const indicePublicaArticulo = unicoPrecio ? 5 : 7;
+            const indicePublicaRubro = unicoPrecio ? 6 : 8;
+            const indiceNoProcesado = unicoPrecio ? 7 : 9;
+
+            listaObjetos.push({
+              id_articulo: columnas[0],
+              nombre_articulo: String(columnas[1]).trim(),
+              descripcion: this.limpiarDescripcion(
+                String(columnas[indiceDescripcion] ?? "").trim(),
+              ),
+              precio1: precios[0],
+              precio2: precios[1],
+              precio3: precios[2],
+              codigo_carta_articulo: "",
+              nombre_rubro: String(columnas[indiceRubro]).trim(),
+              publica_art: columnas[indicePublicaArticulo] ?? 0,
+              publica_rub: columnas[indicePublicaRubro] ?? 0,
+              no_procesado: columnas[indiceNoProcesado] ?? 0,
+            });
+          });
+
+          if (listaObjetos.length === 0) {
+            throw new Error(
+              "No se encontraron artículos para cargar. Verificá que la primera hoja tenga los datos desde la fila 3 y que use la plantilla de artículos.",
+            );
+          }
+        } catch (error) {
+          const mensaje = error?.message || "El archivo tiene un formato no válido.";
+          reject(
+            new Error(
+              mensaje.startsWith("Formato incorrecto") ||
+                mensaje.startsWith("No se encontraron") ||
+                mensaje.startsWith("El archivo Excel") ||
+                mensaje.startsWith("No se pudo")
+                ? mensaje
+                : `No se pudo leer el archivo "${nombreArchivo}". Verificá que no esté dañado y que la primera hoja use la plantilla de artículos. Detalle: ${mensaje}`,
+            ),
+          );
+          return;
+        }
+
+        try {
           await this.setearEn0(id_empresa);
 
           const listaRubros = await this.cargarRubros(listaObjetos, id_empresa);
+          if (
+            !Array.isArray(listaRubros) ||
+            listaRubros.length !== listaObjetos.length ||
+            listaRubros.some((articulo) => !articulo?.nombre_rubro)
+          ) {
+            throw new Error(
+              "No se pudieron registrar todos los rubros del archivo. Revisá que los nombres de rubro sean válidos y volvé a intentarlo.",
+            );
+          }
+
           const booleanoArticulos = await this.cargarArticulos(
             listaRubros,
             id_empresa,
           );
 
-          if (!booleanoArticulos) {
-            return reject(new Error("Error al cargar los artículos"));
+          if (
+            !Array.isArray(booleanoArticulos) ||
+            booleanoArticulos.length !== listaObjetos.length
+          ) {
+            throw new Error(
+              "No se pudieron guardar todos los artículos. Revisá los datos de la plantilla y volvé a intentarlo.",
+            );
           }
 
           const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
 
-          // ✅ ESTE es el retorno correcto
           resolve({
             rubros: listaRubros,
             articulos: booleanoArticulos,
             resultado: resultado,
           });
         } catch (error) {
-          reject(new Error(`Error al procesar el archivo: ${error.message}`));
+          reject(
+            error instanceof Error
+              ? error
+              : new Error("No se pudo completar la carga de artículos. Volvé a intentarlo."),
+          );
         }
       };
 
       reader.onerror = () => {
-        reject(new Error("Error al leer el archivo."));
+        reject(
+          new Error(
+            `No se pudo leer el archivo "${nombreArchivo}". Comprobá que exista, que no esté dañado y volvé a intentarlo.`,
+          ),
+        );
       };
 
-      if (archivo.type === "text/csv") {
-        reader.readAsText(archivo);
-      } else {
+      reader.onabort = () => {
+        reject(new Error("Se canceló la lectura del archivo antes de terminar."));
+      };
+
+      try {
         reader.readAsArrayBuffer(archivo);
+      } catch (error) {
+        reject(
+          new Error(
+            `No se pudo abrir el archivo "${nombreArchivo}". Verificá que sea un .xlsx o .xls válido. Detalle: ${error.message}`,
+          ),
+        );
       }
     });
   }
@@ -254,9 +394,10 @@ class GestorModerador {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Error en el servidor: ${response.status}`,
+          errorData.error ||
+            `No se pudieron guardar los rubros (respuesta del servidor ${response.status}).`,
         );
       }
 
@@ -264,6 +405,7 @@ class GestorModerador {
       return resultado;
     } catch (error) {
       console.error("Error al enviar la lista:", error);
+      throw error;
     }
   }
 
@@ -295,7 +437,14 @@ class GestorModerador {
 
       if (!response.ok) {
         throw new Error(
-          resultado.error || `Error en el servidor: ${response.status}`,
+          resultado.error ||
+            `No se pudieron guardar los artículos (respuesta del servidor ${response.status}).`,
+        );
+      }
+
+      if (!Array.isArray(resultado)) {
+        throw new Error(
+          "El servidor devolvió una respuesta inesperada al guardar los artículos. Intentá nuevamente o contactá al administrador.",
         );
       }
 
@@ -321,13 +470,15 @@ class GestorModerador {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Error en el servidor: ${response.status}`,
+          errorData.error ||
+            `No se pudieron preparar los artículos (respuesta del servidor ${response.status}).`,
         );
       }
     } catch (error) {
       console.error("Error al enviar la lista:", error);
+      throw error;
     }
   }
 
@@ -346,13 +497,15 @@ class GestorModerador {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Error en el servidor: ${response.status}`,
+          errorData.error ||
+            `No se pudieron limpiar los artículos anteriores (respuesta del servidor ${response.status}).`,
         );
       }
     } catch (error) {
       console.error("Error al enviar la lista:", error);
+      throw error;
     }
   }
   async modificarArticulo(
@@ -505,6 +658,7 @@ class GestorModerador {
     botonPedirCuenta,
     botonLlamarMesero,
     contrasenaMesero,
+    unicoPrecio,
   ) {
     const bodyData = {
       id: id,
@@ -519,6 +673,7 @@ class GestorModerador {
       botonPedirCuenta: botonPedirCuenta,
       botonLlamarMesero: botonLlamarMesero,
       contrasenaMesero: contrasenaMesero,
+      unicoPrecio: unicoPrecio,
     };
 
     try {
@@ -879,6 +1034,10 @@ class GestorModerador {
 
   async cargarMeseros(archivo, id_empresa) {
     try {
+      if (!archivo || !/\.(xlsx|xls)$/i.test(archivo.name || "")) {
+        throw new Error("El archivo debe ser un Excel .xlsx o .xls.");
+      }
+
       const data = await archivo.arrayBuffer(); // ← clave para Excel
 
       const workbook = XLSX.read(data, { type: "array" });
