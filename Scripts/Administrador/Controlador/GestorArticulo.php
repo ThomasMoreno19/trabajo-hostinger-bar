@@ -54,6 +54,10 @@ class GestorArticulo
         $this->cargarLista();
         break;
 
+      case 'importar-excel':
+        $this->importarExcel();
+        break;
+
       case 'subir-video':
         $this->subirVideo();
         break;
@@ -236,6 +240,440 @@ class GestorArticulo
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al crear los artículos: ' . $e->getMessage()]);
+    }
+  }
+
+  private function importarExcel(): void
+  {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+      http_response_code(405);
+      header('Allow: POST');
+      echo json_encode(['error' => 'Este endpoint solo acepta solicitudes POST.']);
+      return;
+    }
+
+    try {
+      $datos = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+      if (!is_array($datos)) {
+        throw new InvalidArgumentException('El cuerpo de la solicitud debe ser un objeto JSON.');
+      }
+
+      $id_empresa = $this->enteroImportacion($datos['id_empresa'] ?? null, 'id_empresa');
+      $modo = strtolower(trim((string)($datos['modo'] ?? '')));
+      if (!in_array($modo, ['actualizar', 'sincronizar'], true)) {
+        throw new InvalidArgumentException('El comando debe ser Actualizar o Sincronizar.');
+      }
+
+      $filas = $datos['filas'] ?? null;
+      if (!is_array($filas) || count($filas) < 3) {
+        throw new InvalidArgumentException('El Excel no contiene encabezados y artículos para importar.');
+      }
+      if (count($filas) > 20002 || array_values($filas) !== $filas) {
+        throw new InvalidArgumentException('El Excel supera el límite de 20.000 artículos o tiene filas inválidas.');
+      }
+
+      $empresaStmt = $this->pdo->prepare('SELECT id, unicoPrecio FROM Empresa WHERE id = :id_empresa LIMIT 1');
+      $empresaStmt->execute([':id_empresa' => $id_empresa]);
+      $empresa = $empresaStmt->fetch(PDO::FETCH_ASSOC);
+      if (!$empresa) {
+        http_response_code(404);
+        echo json_encode(['error' => "No existe la empresa {$id_empresa}."]);
+        return;
+      }
+
+      $unicoPrecio = (bool)$empresa['unicoPrecio'];
+      $this->validarEncabezadosExcel($filas[1] ?? null, $unicoPrecio);
+      $maximoIndiceColumna = $unicoPrecio ? 7 : 9;
+      $filasValidadas = [];
+      $ids = [];
+
+      foreach ($filas as $indice => $fila) {
+        if ($indice < 2) {
+          continue;
+        }
+        $numeroFila = $indice + 1;
+        if (!is_array($fila)) {
+          throw new InvalidArgumentException("La fila {$numeroFila} no tiene un formato válido.");
+        }
+        if (!$this->filaExcelTieneDatos($fila)) {
+          continue;
+        }
+
+        for ($columna = $maximoIndiceColumna + 1; $columna < count($fila); $columna++) {
+          if ($this->tieneValorExcel($fila[$columna] ?? null)) {
+            $plantilla = $unicoPrecio ? 'Articulos1Importe.xlsx' : 'Articulos.xlsx';
+            throw new InvalidArgumentException(
+              "La fila {$numeroFila} tiene datos en columnas que no corresponden al formato de la empresa. Usá {$plantilla}."
+            );
+          }
+        }
+
+        $indiceRubro = $unicoPrecio ? 3 : 5;
+        $indicesObligatorios = $unicoPrecio ? [0, 1, 2, 3] : [0, 1, 2, 3, 4, 5];
+        foreach ($indicesObligatorios as $indiceColumna) {
+          if (!$this->tieneValorExcel($fila[$indiceColumna] ?? null)) {
+            $plantilla = $unicoPrecio ? 'Articulos1Importe.xlsx' : 'Articulos.xlsx';
+            throw new InvalidArgumentException(
+              "La fila {$numeroFila} no tiene todas las columnas requeridas para esta empresa. Usá {$plantilla}."
+            );
+          }
+        }
+
+        $id = $this->enteroImportacion($fila[0] ?? null, "Código del artículo en la fila {$numeroFila}");
+        if (isset($ids[$id])) {
+          throw new InvalidArgumentException("El ID {$id} está repetido en el Excel.");
+        }
+        $ids[$id] = true;
+
+        $nombre = $this->textoImportacion($fila[1] ?? null, "nombre del artículo en la fila {$numeroFila}");
+        $rubro = $this->textoImportacion($fila[$indiceRubro] ?? null, "rubro en la fila {$numeroFila}");
+        if ($nombre === '' || $rubro === '') {
+          throw new InvalidArgumentException("La fila {$numeroFila} debe incluir el nombre del artículo y el rubro.");
+        }
+
+        $indiceDescripcion = $unicoPrecio ? 4 : 6;
+        $indicePublicaArticulo = $unicoPrecio ? 5 : 7;
+        $indicePublicaRubro = $unicoPrecio ? 6 : 8;
+        $indiceNoProcesado = $unicoPrecio ? 7 : 9;
+        $precio1 = $this->numeroImportacion($fila[2] ?? null, "precio 1 en la fila {$numeroFila}");
+        $precio2 = $unicoPrecio
+          ? $precio1
+          : $this->numeroImportacion($fila[3] ?? null, "precio 2 en la fila {$numeroFila}");
+        $precio3 = $unicoPrecio
+          ? $precio1
+          : $this->numeroImportacion($fila[4] ?? null, "precio 3 en la fila {$numeroFila}");
+        $descripcion = $this->textoImportacion($fila[$indiceDescripcion] ?? '', "composición en la fila {$numeroFila}");
+        $descripcion = preg_replace('/[\r\n]+/', ', ', $descripcion);
+
+        $filasValidadas[] = [
+          'id' => $id,
+          'nombre' => $nombre,
+          'descripcion' => $descripcion,
+          'rubro' => $rubro,
+          'precio1' => $precio1,
+          'precio2' => $precio2,
+          'precio3' => $precio3,
+          'codigo_carta' => '',
+          'solo_mesero' => $this->banderaImportacion($fila[$indicePublicaArticulo] ?? 0, "PUBLICA ART en la fila {$numeroFila}"),
+          'solo_mesero_rubro' => $this->banderaImportacion($fila[$indicePublicaRubro] ?? 0, "PUBLICA RUB en la fila {$numeroFila}"),
+          'no_procesado' => $this->banderaImportacion($fila[$indiceNoProcesado] ?? 0, "NO PROCESA en la fila {$numeroFila}"),
+        ];
+      }
+
+      if (!$filasValidadas) {
+        throw new InvalidArgumentException('No se encontraron artículos en las filas posteriores a los encabezados.');
+      }
+
+      $this->pdo->beginTransaction();
+      $eliminados = ['articulos' => 0, 'rubros' => 0];
+      if ($modo === 'sincronizar') {
+        $marcarRubros = $this->pdo->prepare(
+          'UPDATE Rubro SET aparece_en_csv = 0 WHERE id_empresa = :id_empresa AND creado_en_pagina = 0'
+        );
+        $marcarRubros->execute([':id_empresa' => $id_empresa]);
+
+        $marcarArticulos = $this->pdo->prepare(
+          'UPDATE Articulo SET aparece_en_csv = 0 WHERE id_empresa = :id_empresa AND creado_en_pagina = 0'
+        );
+        $marcarArticulos->execute([':id_empresa' => $id_empresa]);
+      }
+
+      $buscarRubro = $this->pdo->prepare(
+        'SELECT id FROM Rubro WHERE nombre = :nombre AND id_empresa = :id_empresa LIMIT 1'
+      );
+      $crearRubro = $this->pdo->prepare(
+        "INSERT INTO Rubro (nombre, id_empresa, logo_url, solo_mesero, fecha_eliminado, aparece_en_csv, creado_en_pagina)
+         VALUES (:nombre, :id_empresa, '/Archivos/Logos/Vacio.png', :solo_mesero, '', 1, 0)"
+      );
+      $actualizarRubro = $this->pdo->prepare(
+        'UPDATE Rubro SET solo_mesero = :solo_mesero, aparece_en_csv = 1 WHERE id = :id AND id_empresa = :id_empresa'
+      );
+      $guardarArticulo = $this->pdo->prepare(
+         "INSERT INTO Articulo (
+            id, id_rubro, id_empresa, nombre, descripcion, precio1, precio2, precio3,
+            codigo_carta, solo_mesero, no_procesado, aparece_en_csv, creado_en_pagina, logo_url, video_url
+          ) VALUES (
+            :id, :id_rubro, :id_empresa, :nombre, :descripcion, :precio1, :precio2, :precio3,
+            :codigo_carta, :solo_mesero, :no_procesado, 1, 0, '/Archivos/Logos/Vacio.png', NULL
+          ) ON DUPLICATE KEY UPDATE
+           id_rubro = VALUES(id_rubro),
+           id_empresa = VALUES(id_empresa),
+           nombre = VALUES(nombre),
+           descripcion = VALUES(descripcion),
+           precio1 = VALUES(precio1),
+           precio2 = VALUES(precio2),
+           precio3 = VALUES(precio3),
+           codigo_carta = VALUES(codigo_carta),
+           solo_mesero = VALUES(solo_mesero),
+           no_procesado = VALUES(no_procesado),
+           aparece_en_csv = 1"
+      );
+
+      foreach ($filasValidadas as $articulo) {
+        $buscarRubro->execute([
+          ':nombre' => $articulo['rubro'],
+          ':id_empresa' => $id_empresa,
+        ]);
+        $id_rubro = $buscarRubro->fetchColumn();
+
+        if ($id_rubro === false) {
+          $crearRubro->execute([
+            ':nombre' => $articulo['rubro'],
+            ':id_empresa' => $id_empresa,
+            ':solo_mesero' => $articulo['solo_mesero_rubro'],
+          ]);
+          $id_rubro = (int)$this->pdo->lastInsertId();
+        } else {
+          $id_rubro = (int)$id_rubro;
+          $actualizarRubro->execute([
+            ':solo_mesero' => $articulo['solo_mesero_rubro'],
+            ':id' => $id_rubro,
+            ':id_empresa' => $id_empresa,
+          ]);
+        }
+
+        $guardarArticulo->execute([
+          ':id' => $articulo['id'],
+          ':id_rubro' => $id_rubro,
+          ':id_empresa' => $id_empresa,
+          ':nombre' => $articulo['nombre'],
+          ':descripcion' => $articulo['descripcion'],
+          ':precio1' => (string)$articulo['precio1'],
+          ':precio2' => (string)$articulo['precio2'],
+          ':precio3' => (string)$articulo['precio3'],
+          ':codigo_carta' => $articulo['codigo_carta'],
+          ':solo_mesero' => $articulo['solo_mesero'],
+          ':no_procesado' => $articulo['no_procesado'],
+        ]);
+      }
+
+      if ($modo === 'sincronizar') {
+        $contarArticulos = $this->pdo->prepare(
+          'SELECT COUNT(*) FROM Articulo WHERE id_empresa = :id_empresa AND aparece_en_csv = 0 AND creado_en_pagina = 0'
+        );
+        $contarArticulos->execute([':id_empresa' => $id_empresa]);
+        $eliminados['articulos'] = (int)$contarArticulos->fetchColumn();
+
+        $contarRubros = $this->pdo->prepare(
+          'SELECT COUNT(*) FROM Rubro WHERE id_empresa = :id_empresa AND aparece_en_csv = 0 AND creado_en_pagina = 0'
+        );
+        $contarRubros->execute([':id_empresa' => $id_empresa]);
+        $eliminados['rubros'] = (int)$contarRubros->fetchColumn();
+
+        $borrarArticulos = $this->pdo->prepare(
+          'DELETE FROM Articulo WHERE id_empresa = :id_empresa AND aparece_en_csv = 0 AND creado_en_pagina = 0'
+        );
+        $borrarArticulos->execute([':id_empresa' => $id_empresa]);
+
+        $borrarRubros = $this->pdo->prepare(
+          'DELETE FROM Rubro WHERE id_empresa = :id_empresa AND aparece_en_csv = 0 AND creado_en_pagina = 0'
+        );
+        $borrarRubros->execute([':id_empresa' => $id_empresa]);
+      }
+
+      $this->pdo->commit();
+      $this->borrarCacheImportacion($id_empresa);
+
+      echo json_encode([
+        'modo' => $modo,
+        'procesados' => count($filasValidadas),
+        'eliminados' => $eliminados,
+      ]);
+    } catch (JsonException $e) {
+      http_response_code(400);
+      echo json_encode(['error' => 'El cuerpo de la solicitud no contiene JSON válido.']);
+    } catch (InvalidArgumentException $e) {
+      http_response_code(400);
+      echo json_encode(['error' => $e->getMessage()]);
+    } catch (Throwable $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      error_log('Error al importar artículos desde Excel: ' . $e->getMessage());
+      http_response_code(500);
+      echo json_encode(['error' => 'No se pudo completar la importación: ' . $e->getMessage()]);
+    }
+  }
+
+  private function enteroImportacion($valor, string $campo): int
+  {
+    if (is_int($valor) && $valor > 0) {
+      return $valor;
+    }
+    if (is_float($valor) && is_finite($valor) && floor($valor) === $valor && $valor > 0 && $valor <= PHP_INT_MAX) {
+      return (int)$valor;
+    }
+    if (is_string($valor) && preg_match('/^[1-9][0-9]*$/', trim($valor))) {
+      $entero = filter_var(trim($valor), FILTER_VALIDATE_INT);
+      if ($entero !== false && $entero > 0) {
+        return $entero;
+      }
+    }
+    throw new InvalidArgumentException("{$campo} debe ser un entero positivo.");
+  }
+
+  private function validarEncabezadosExcel($encabezados, bool $unicoPrecio): void
+  {
+    if (!is_array($encabezados)) {
+      throw new InvalidArgumentException('No se encontró la fila de encabezados del Excel.');
+    }
+
+    $plantilla = $unicoPrecio ? 'Articulos1Importe.xlsx' : 'Articulos.xlsx';
+    $esperados = [
+      0 => [['codigo', 'codigoarticulo', 'id'], 'código'],
+      1 => [['descripcion', 'articulo', 'nombre', 'nombrearticulo'], 'descripción'],
+    ];
+    if ($unicoPrecio) {
+      $esperados[2] = [['importe', 'precio'], 'importe'];
+      $esperados[3] = [['rubro', 'categoria'], 'rubro'];
+      $opcionales = [
+        4 => [['composicion', 'detalle', 'observaciones'], 'composición'],
+        5 => [['publicaart', 'publicaarticulo'], 'PUBLICA ART'],
+        6 => [['publicarub', 'publicarubro'], 'PUBLICA RUB'],
+        7 => [['noprocesa', 'noprocesado', 'noprocesar'], 'NO PROCESA'],
+      ];
+      $maximaColumna = 7;
+    } else {
+      $esperados[2] = [['importe', 'importe1', 'precio', 'precio1'], 'precio 1'];
+      $esperados[3] = [['importe', 'importe2', 'precio', 'precio2'], 'precio 2'];
+      $esperados[4] = [['importe', 'importe3', 'precio', 'precio3'], 'precio 3'];
+      $esperados[5] = [['rubro', 'categoria'], 'rubro'];
+      $opcionales = [
+        6 => [['composicion', 'detalle', 'observaciones'], 'composición'],
+        7 => [['publicaart', 'publicaarticulo'], 'PUBLICA ART'],
+        8 => [['publicarub', 'publicarubro'], 'PUBLICA RUB'],
+        9 => [['noprocesa', 'noprocesado', 'noprocesar'], 'NO PROCESA'],
+      ];
+      $maximaColumna = 9;
+    }
+
+    foreach ($esperados as $indice => [$nombresAceptados, $nombreColumna]) {
+      $actual = $this->normalizarEncabezadoExcel($encabezados[$indice] ?? null);
+      if (!in_array($actual, $nombresAceptados, true)) {
+        throw new InvalidArgumentException(
+          'La columna ' . ($indice + 1) . " debe ser {$nombreColumna} para la configuración de esta empresa. Usá {$plantilla}."
+        );
+      }
+    }
+
+    foreach ($opcionales as $indice => [$nombresAceptados, $nombreColumna]) {
+      $valor = $encabezados[$indice] ?? null;
+      if (!$this->tieneValorExcel($valor)) {
+        continue;
+      }
+      $actual = $this->normalizarEncabezadoExcel($valor);
+      if (!in_array($actual, $nombresAceptados, true)) {
+        throw new InvalidArgumentException(
+          'La columna ' . ($indice + 1) . " ({$actual}) no corresponde a {$nombreColumna} en {$plantilla}."
+        );
+      }
+    }
+
+    for ($indice = $maximaColumna + 1; $indice < count($encabezados); $indice++) {
+      if ($this->tieneValorExcel($encabezados[$indice] ?? null)) {
+        throw new InvalidArgumentException(
+          "El Excel tiene columnas adicionales que no corresponden a {$plantilla}."
+        );
+      }
+    }
+  }
+
+  private function normalizarEncabezadoExcel($valor): string
+  {
+    if (!is_scalar($valor)) {
+      return '';
+    }
+    $texto = strtr(trim((string)$valor), [
+      'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N',
+      'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+    ]);
+    return strtolower((string)preg_replace('/[^a-zA-Z0-9]+/', '', $texto));
+  }
+
+  private function filaExcelTieneDatos(array $fila): bool
+  {
+    foreach ($fila as $valor) {
+      if ($this->tieneValorExcel($valor)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private function tieneValorExcel($valor): bool
+  {
+    if ($valor === null) {
+      return false;
+    }
+    if (!is_scalar($valor)) {
+      return true;
+    }
+    return $valor !== null && trim((string)$valor) !== '';
+  }
+
+  private function textoImportacion($valor, string $campo): string
+  {
+    if ($valor === null) {
+      return '';
+    }
+    if (!is_scalar($valor)) {
+      throw new InvalidArgumentException("El campo {$campo} debe ser texto.");
+    }
+    return trim((string)$valor);
+  }
+
+  private function numeroImportacion($valor, string $campo): float
+  {
+    if (is_string($valor)) {
+      $valor = str_replace(['$', ' ', "\xc2\xa0"], '', trim($valor));
+      if (strpos($valor, ',') !== false && strpos($valor, '.') !== false) {
+        if (strrpos($valor, ',') > strrpos($valor, '.')) {
+          $valor = str_replace('.', '', $valor);
+          $valor = str_replace(',', '.', $valor);
+        } else {
+          $valor = str_replace(',', '', $valor);
+        }
+      } elseif (strpos($valor, ',') !== false) {
+        $valor = str_replace(',', '.', $valor);
+      }
+    }
+    if (is_bool($valor) || !is_numeric($valor) || !is_finite((float)$valor)) {
+      throw new InvalidArgumentException("{$campo} debe ser un número válido.");
+    }
+    return (float)$valor;
+  }
+
+  private function banderaImportacion($valor, string $campo): int
+  {
+    if (is_bool($valor)) {
+      return $valor ? 1 : 0;
+    }
+    if (is_numeric($valor) && ((float)$valor === 0.0 || (float)$valor === 1.0)) {
+      return (int)$valor;
+    }
+
+    $texto = strtolower(trim((string)$valor));
+    if (in_array($texto, ['true', 'verdadero', 'si', 'sí'], true)) {
+      return 1;
+    }
+    if (in_array($texto, ['false', 'falso', 'no', ''], true)) {
+      return 0;
+    }
+    throw new InvalidArgumentException("{$campo} debe indicar 0 o 1.");
+  }
+
+  private function borrarCacheImportacion(int $id_empresa): void
+  {
+    $this->borrarCacheTodos($id_empresa);
+    $cacheDir = $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cache/';
+    foreach ([
+      "rubros_empresa_{$id_empresa}.json",
+      "rubros_empresa_{$id_empresa}_cliente.json",
+    ] as $nombreArchivo) {
+      $archivo = $cacheDir . $nombreArchivo;
+      if (is_file($archivo)) {
+        @unlink($archivo);
+      }
     }
   }
 

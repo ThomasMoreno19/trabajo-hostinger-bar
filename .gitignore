@@ -1,17 +1,8 @@
 #Excluir archivos de configuración local
 Scripts/Incluye/localBD.php
-Archivos/Logos/Articulo/*
-Archivos/Logos/Empresa/*
-Archivos/Logos/Rubro/*
 index.php
 Scripts/cuenta.php
 Scripts/Cache/*
 !Scripts/Cache/.gitkeep
-
-Archivos/Videos/*
-!Archivos/Videos/.gitkeep
-
-Archivos/Iconos/*
-!Archivos/Iconos/.gitkeep
-
+Archivos/*
 .env*
